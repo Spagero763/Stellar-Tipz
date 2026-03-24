@@ -1,6 +1,6 @@
 //! Storage keys and helpers for the Tipz contract.
 
-use soroban_sdk::{contracttype, Address, Env, String};
+use soroban_sdk::{contracttype, Address, String};
 
 /// Storage key enum for all contract data.
 #[contracttype]
@@ -29,6 +29,8 @@ pub enum DataKey {
     TotalTipsVolume,
     /// Flag indicating contract is initialized
     Initialized,
+    /// Native XLM token contract address (SAC)
+    NativeToken,
 }
 
 // ──────────────────────────────────────────────
