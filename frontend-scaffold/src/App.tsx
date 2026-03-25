@@ -15,4 +15,4 @@ import LandingPage from './features/landing/LandingPage';
   );
 };
 
-export default App;
+export default App
