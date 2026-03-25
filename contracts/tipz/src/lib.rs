@@ -177,6 +177,7 @@ impl TipzContract {
             return Err(ContractError::NotRegistered);
         }
 
+        storage::extend_instance_ttl(&env);
         let mut profile = storage::get_profile(&env, &address);
         let score = credit::calculate_credit_score(&profile, env.ledger().timestamp());
         profile.credit_score = score;
@@ -219,35 +220,43 @@ impl TipzContract {
     // Admin
     // ──────────────────────────────────────────────
 
-    /// Update the withdrawal fee (admin only).
-    pub fn set_fee(_env: Env, _caller: Address, _fee_bps: u32) -> Result<(), ContractError> {
-        // TODO: Implement in issue #20 - Admin Fee Management
-        Err(ContractError::NotInitialized)
+    /// Update the withdrawal fee in basis points (max 1000 = 10 %). Admin only.
+    ///
+    /// Emits a `FeeUpdated` event with `(old_bps, new_bps)`.
+    pub fn set_fee(env: Env, caller: Address, fee_bps: u32) -> Result<(), ContractError> {
+        admin::set_fee(&env, &caller, fee_bps)
     }
 
-    /// Update the fee collector address (admin only).
+    /// Update the fee collector address. Admin only.
+    ///
+    /// Emits a `FeeCollectorUpdated` event with the new collector address.
     pub fn set_fee_collector(
-        _env: Env,
-        _caller: Address,
-        _new_collector: Address,
+        env: Env,
+        caller: Address,
+        new_collector: Address,
     ) -> Result<(), ContractError> {
-        // TODO: Implement in issue #21 - Fee Collector Update
-        Err(ContractError::NotInitialized)
+        admin::set_fee_collector(&env, &caller, &new_collector)
     }
 
-    /// Transfer admin role (admin only).
+    /// Transfer the admin role to a new address. Admin only.
+    ///
+    /// Emits an `AdminChanged` event with `(old_admin, new_admin)`.
     pub fn set_admin(
-        _env: Env,
-        _caller: Address,
-        _new_admin: Address,
+        env: Env,
+        caller: Address,
+        new_admin: Address,
     ) -> Result<(), ContractError> {
-        // TODO: Implement in issue #22 - Admin Transfer
-        Err(ContractError::NotInitialized)
+        admin::set_admin(&env, &caller, &new_admin)
     }
 
     /// Get global contract statistics.
     pub fn get_stats(_env: Env) -> Result<ContractStats, ContractError> {
         // TODO: Implement in issue #23 - Contract Stats
         Err(ContractError::NotInitialized)
+    }
+
+    /// Extend the contract instance TTL manually (admin only).
+    pub fn bump_ttl(env: Env, caller: Address) -> Result<(), ContractError> {
+        admin::bump_ttl(&env, &caller)
     }
 }
