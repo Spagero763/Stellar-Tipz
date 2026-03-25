@@ -11,7 +11,7 @@
 
 #![cfg(test)]
 
-use soroban_sdk::{testutils::Address as _, Address, Env};
+use soroban_sdk::{testutils::Address as _, testutils::Events, Address, Env};
 
 use crate::errors::ContractError;
 use crate::storage::DataKey;
