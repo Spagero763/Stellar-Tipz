@@ -4,6 +4,7 @@ import { Github, Menu, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import Button from "../ui/Button";
 import { useWallet } from "../../hooks/useWallet";
+import NetworkBadge from "../shared/NetworkBadge";
 
 const Header: React.FC = () => {
   const { connected, publicKey, connect, disconnect } = useWallet();
@@ -83,6 +84,9 @@ const Header: React.FC = () => {
           >
             <Github size={20} />
           </a>
+          <div className="hidden md:block">
+            <NetworkBadge />
+          </div>
           <Button
             size="sm"
             className="hidden md:inline-flex"
@@ -144,9 +148,15 @@ const Header: React.FC = () => {
                 Dashboard
               </Link>
 
-              <Button className="w-full" onClick={handleWalletAction}>
-                {connected ? `Disconnect ${walletLabel}` : "Connect Wallet"}
-              </Button>
+              <div className="flex flex-col gap-2 pt-2 border-t-2 border-black">
+                <div className="flex items-center justify-between px-2">
+                  <span className="text-xs font-bold uppercase">Network</span>
+                  <NetworkBadge />
+                </div>
+                <Button className="w-full" onClick={handleWalletAction}>
+                  {connected ? `Disconnect ${walletLabel}` : "Connect Wallet"}
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
