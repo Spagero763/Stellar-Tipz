@@ -14,3 +14,5 @@ mod test_tips;
 mod test_update_profile;
 mod test_validation;
 mod test_withdraw;
+mod test_integration;
+mod test_integration_advanced;
