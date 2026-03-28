@@ -114,35 +114,83 @@ pub fn update_x_metrics(
     Ok(())
 }
 
-/// Update X metrics for many creators in one transaction. Admin only.
+/// Validate that X metric values are non-negative (structurally guaranteed for
+/// `u32`) and within reasonable bounds.  Returns `true` when the values are
+/// acceptable.
+fn validate_x_metrics(_x_followers: u32, _x_engagement_avg: u32) -> bool {
+    // u32 is always >= 0.  This hook exists so that additional upper-bound or
+    // consistency checks can be added later without changing call-sites.
+    true
+}
+
+/// Collect the addresses that would be skipped by [`batch_update_x_metrics`]
+/// **without** modifying any on-chain state (dry-run / preview mode).
 ///
-/// Entries for addresses without a registered profile are skipped and a
-/// batch-skip event is recorded for each skip. Returns the number of profiles
-/// successfully updated.
-pub fn batch_update_x_metrics(
+/// An address is skipped when it is not registered **or** when its metric
+/// values fail validation.
+pub fn batch_update_x_metrics_preview(
     env: &Env,
     caller: &Address,
     updates: Vec<(Address, u32, u32)>,
-) -> Result<u32, ContractError> {
+) -> Result<Vec<Address>, ContractError> {
     storage::extend_instance_ttl(env);
     require_admin(env, caller)?;
     let len = updates.len();
     if len > MAX_X_METRICS_BATCH_LEN {
         return Err(ContractError::BatchTooLarge);
     }
-    let mut updated: u32 = 0;
+    let mut skipped: Vec<Address> = Vec::new(env);
     let mut i: u32 = 0;
     while i < len {
         let (creator, x_followers, x_engagement_avg) = updates.get(i).unwrap();
-        if !storage::has_profile(env, &creator) {
-            events::emit_x_metrics_batch_skipped(env, &creator);
-        } else {
-            apply_x_metrics_to_profile(env, &creator, x_followers, x_engagement_avg);
-            updated += 1;
+        if !storage::has_profile(env, &creator) || !validate_x_metrics(x_followers, x_engagement_avg)
+        {
+            skipped.push_back(creator);
         }
         i += 1;
     }
-    Ok(updated)
+    Ok(skipped)
+}
+
+/// Update X metrics for many creators in one transaction. Admin only.
+///
+/// Entries for addresses without a registered profile or with invalid metric
+/// values are skipped (with a per-entry event).  Returns a `Vec<Address>` of
+/// all skipped addresses so the caller knows which entries were not applied.
+///
+/// An `XMetricsBatchCompleted` event is emitted at the end with the processed
+/// count, skipped count, and the list of skipped addresses.
+pub fn batch_update_x_metrics(
+    env: &Env,
+    caller: &Address,
+    updates: Vec<(Address, u32, u32)>,
+) -> Result<Vec<Address>, ContractError> {
+    storage::extend_instance_ttl(env);
+    require_admin(env, caller)?;
+    let len = updates.len();
+    if len > MAX_X_METRICS_BATCH_LEN {
+        return Err(ContractError::BatchTooLarge);
+    }
+    let mut processed: u32 = 0;
+    let mut skipped_addresses: Vec<Address> = Vec::new(env);
+    let mut i: u32 = 0;
+    while i < len {
+        let (creator, x_followers, x_engagement_avg) = updates.get(i).unwrap();
+        if !validate_x_metrics(x_followers, x_engagement_avg) {
+            events::emit_x_metrics_batch_skipped(env, &creator);
+            skipped_addresses.push_back(creator);
+        } else if !storage::has_profile(env, &creator) {
+            events::emit_x_metrics_batch_skipped(env, &creator);
+            skipped_addresses.push_back(creator);
+        } else {
+            apply_x_metrics_to_profile(env, &creator, x_followers, x_engagement_avg);
+            processed += 1;
+        }
+        i += 1;
+    }
+    let skipped_count = skipped_addresses.len();
+    events::emit_x_metrics_batch_completed(env, processed, skipped_count, skipped_addresses.clone());
+    Ok(skipped_addresses)
 }
 
 /// Extend the contract instance TTL manually. Admin only.

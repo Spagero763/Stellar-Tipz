@@ -71,7 +71,31 @@ See [docs/CONTRACT_SPEC.md](../docs/CONTRACT_SPEC.md) for the full specification
 | `set_fee` | Update withdrawal fee (admin) |
 | `set_fee_collector` | Update fee collector (admin) |
 | `set_admin` | Transfer admin role (admin) |
+| `get_tip_count` | Get total tips ever sent (never expires) |
 | `get_stats` | Get global contract statistics |
+
+## Tip History & Event-Based Indexing
+
+Individual tip records are stored in **temporary storage** with a ~7-day TTL.
+After expiry the on-chain record is gone, but the **`TipSent` event** emitted
+with every tip contains all fields needed to reconstruct the full history:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | `u32` | Unique, monotonically increasing tip ID |
+| `tipper` | `Address` | Sender address |
+| `creator` | `Address` | Recipient creator address |
+| `amount` | `i128` | Tip amount in stroops |
+| `message` | `String` | Optional tip message (0-280 chars) |
+| `timestamp` | `u64` | Ledger timestamp when the tip was sent |
+
+The global `TipCount` counter lives in instance storage and **never expires**,
+so `get_tip_count()` always returns the total number of tips ever sent.
+
+To build a complete tip history, point an off-chain indexer (e.g.
+[Mercury](https://mercurydata.app), SubQuery, or a custom Horizon event
+watcher) at the `("tip", "sent")` contract events and persist them in your own
+database.
 
 ## Contributing
 

@@ -11,7 +11,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black bg-opacity-50"
@@ -21,7 +21,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
 
       {/* Modal content */}
       <div
-        className="relative bg-white border-3 border-black p-8 max-w-lg w-full mx-4 z-10"
+        className="relative z-10 w-full border-3 border-black bg-white p-6 sm:mx-4 sm:max-w-lg sm:p-8 max-sm:h-full max-sm:max-w-none max-sm:rounded-none"
         style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,1)' }}
         role="dialog"
         aria-modal="true"

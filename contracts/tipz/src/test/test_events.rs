@@ -61,9 +61,10 @@ fn test_event_tip_sent() {
     let (env, contract_id) = setup();
     let from = Address::generate(&env);
     let to = Address::generate(&env);
+    let message = String::from_str(&env, "thanks!");
 
     env.as_contract(&contract_id, || {
-        events::emit_tip_sent(&env, &from, &to, 5_000_000);
+        events::emit_tip_sent(&env, 0, &from, &to, 5_000_000, &message, 1234567890);
     });
 
     let all = env.events().all();
@@ -72,6 +73,50 @@ fn test_event_tip_sent() {
     assert_eq!(topics.len(), 2);
     assert_topic!(topics.get(0).unwrap(), symbol_short!("tip"));
     assert_topic!(topics.get(1).unwrap(), symbol_short!("sent"));
+}
+
+// ── test_event_tip_sent_contains_all_indexing_fields ─────────────────────────
+
+#[test]
+fn test_event_tip_sent_contains_all_indexing_fields() {
+    let (env, contract_id) = setup();
+    let tipper = Address::generate(&env);
+    let creator = Address::generate(&env);
+    let message = String::from_str(&env, "great work!");
+    let tip_id: u32 = 42;
+    let amount: i128 = 10_000_000;
+    let timestamp: u64 = 1700000000;
+
+    env.as_contract(&contract_id, || {
+        events::emit_tip_sent(&env, tip_id, &tipper, &creator, amount, &message, timestamp);
+    });
+
+    let all = env.events().all();
+    assert_eq!(all.len(), 1);
+    let (_contract, topics, data) = all.get(0).unwrap();
+
+    // Verify topics
+    assert_eq!(topics.len(), 2);
+    assert_topic!(topics.get(0).unwrap(), symbol_short!("tip"));
+    assert_topic!(topics.get(1).unwrap(), symbol_short!("sent"));
+
+    // Verify data contains all 6 fields by decoding the tuple
+    let (
+        ev_tip_id,
+        ev_tipper,
+        ev_creator,
+        ev_amount,
+        ev_message,
+        ev_timestamp,
+    ): (u32, Address, Address, i128, String, u64) =
+        soroban_sdk::FromVal::from_val(&env, &data);
+
+    assert_eq!(ev_tip_id, tip_id);
+    assert_eq!(ev_tipper, tipper);
+    assert_eq!(ev_creator, creator);
+    assert_eq!(ev_amount, amount);
+    assert_eq!(ev_message, message);
+    assert_eq!(ev_timestamp, timestamp);
 }
 
 // ── test_event_tips_withdrawn ─────────────────────────────────────────────────

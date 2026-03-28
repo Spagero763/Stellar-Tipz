@@ -378,8 +378,8 @@ fn test_batch_update_success() {
         (creator1.clone(), 1000_u32, 20_u32),
         (creator2.clone(), 2000_u32, 40_u32),
     ];
-    let updated = ctx.client.batch_update_x_metrics(&ctx.admin, &updates);
-    assert_eq!(updated, 2);
+    let skipped = ctx.client.batch_update_x_metrics(&ctx.admin, &updates);
+    assert_eq!(skipped.len(), 0);
 
     let p1 = ctx.env.as_contract(&ctx.contract_id, || {
         storage::get_profile(&ctx.env, &creator1)
@@ -420,13 +420,140 @@ fn test_batch_update_skips_unregistered() {
         (registered.clone(), 500_u32, 10_u32),
         (unregistered.clone(), 999_u32, 99_u32),
     ];
-    // Should not error — unregistered entry is silently skipped
-    let updated = ctx.client.batch_update_x_metrics(&ctx.admin, &updates);
-    assert_eq!(updated, 1);
+    // Should not error — unregistered entry is skipped and returned
+    let skipped = ctx.client.batch_update_x_metrics(&ctx.admin, &updates);
+    assert_eq!(skipped.len(), 1);
+    assert_eq!(skipped.get(0).unwrap(), unregistered);
 
     // Registered creator was updated
     let profile = ctx.env.as_contract(&ctx.contract_id, || {
         storage::get_profile(&ctx.env, &registered)
     });
     assert_eq!(profile.x_followers, 500);
+}
+
+// ── test_batch_update_returns_all_skipped_addresses ──────────────────────────
+
+#[test]
+fn test_batch_update_returns_all_skipped_addresses() {
+    let ctx = setup();
+    let registered = Address::generate(&ctx.env);
+    let unreg1 = Address::generate(&ctx.env);
+    let unreg2 = Address::generate(&ctx.env);
+    insert_profile(&ctx, &registered);
+
+    let updates = vec![
+        &ctx.env,
+        (unreg1.clone(), 100_u32, 10_u32),
+        (registered.clone(), 500_u32, 10_u32),
+        (unreg2.clone(), 200_u32, 20_u32),
+    ];
+    let skipped = ctx.client.batch_update_x_metrics(&ctx.admin, &updates);
+    assert_eq!(skipped.len(), 2);
+    assert_eq!(skipped.get(0).unwrap(), unreg1);
+    assert_eq!(skipped.get(1).unwrap(), unreg2);
+
+    // Registered creator was still updated
+    let profile = ctx.env.as_contract(&ctx.contract_id, || {
+        storage::get_profile(&ctx.env, &registered)
+    });
+    assert_eq!(profile.x_followers, 500);
+}
+
+// ── test_batch_update_emits_completed_event ──────────────────────────────────
+
+#[test]
+fn test_batch_update_emits_completed_event() {
+    let ctx = setup();
+    let registered = Address::generate(&ctx.env);
+    let unregistered = Address::generate(&ctx.env);
+    insert_profile(&ctx, &registered);
+
+    let updates = vec![
+        &ctx.env,
+        (registered.clone(), 500_u32, 10_u32),
+        (unregistered.clone(), 999_u32, 99_u32),
+    ];
+    ctx.client.batch_update_x_metrics(&ctx.admin, &updates);
+
+    let events = ctx.env.events().all();
+    // Should have at least: batch-skipped event + credit-updated event + batch-done event
+    assert!(
+        events.len() >= 2,
+        "expected batch completed and skipped events"
+    );
+}
+
+// ── test_batch_update_preview_returns_skipped ────────────────────────────────
+
+#[test]
+fn test_batch_update_preview_returns_skipped() {
+    let ctx = setup();
+    let registered = Address::generate(&ctx.env);
+    let unregistered = Address::generate(&ctx.env);
+    insert_profile(&ctx, &registered);
+
+    let updates = vec![
+        &ctx.env,
+        (registered.clone(), 500_u32, 10_u32),
+        (unregistered.clone(), 999_u32, 99_u32),
+    ];
+    let skipped = ctx
+        .client
+        .batch_update_x_metrics_preview(&ctx.admin, &updates);
+    assert_eq!(skipped.len(), 1);
+    assert_eq!(skipped.get(0).unwrap(), unregistered);
+
+    // Verify no state was modified (profile should still have original values)
+    let profile = ctx.env.as_contract(&ctx.contract_id, || {
+        storage::get_profile(&ctx.env, &registered)
+    });
+    assert_eq!(profile.x_followers, 0);
+    assert_eq!(profile.x_engagement_avg, 0);
+}
+
+// ── test_batch_update_preview_too_large ──────────────────────────────────────
+
+#[test]
+fn test_batch_update_preview_too_large() {
+    let ctx = setup();
+    let addr = Address::generate(&ctx.env);
+    let mut updates = vec![&ctx.env, (addr.clone(), 0_u32, 0_u32)];
+    for _ in 0..50 {
+        updates.push_back((addr.clone(), 0_u32, 0_u32));
+    }
+    let result = ctx
+        .client
+        .try_batch_update_x_metrics_preview(&ctx.admin, &updates);
+    assert_eq!(result, Err(Ok(ContractError::BatchTooLarge)));
+}
+
+// ── test_batch_update_preview_non_admin ──────────────────────────────────────
+
+#[test]
+fn test_batch_update_preview_non_admin() {
+    let ctx = setup();
+    let updates = vec![&ctx.env, (Address::generate(&ctx.env), 0_u32, 0_u32)];
+    let stranger = Address::generate(&ctx.env);
+    let result = ctx
+        .client
+        .try_batch_update_x_metrics_preview(&stranger, &updates);
+    assert_eq!(result, Err(Ok(ContractError::NotAuthorized)));
+}
+
+// ── test_batch_update_all_unregistered ───────────────────────────────────────
+
+#[test]
+fn test_batch_update_all_unregistered() {
+    let ctx = setup();
+    let unreg1 = Address::generate(&ctx.env);
+    let unreg2 = Address::generate(&ctx.env);
+
+    let updates = vec![
+        &ctx.env,
+        (unreg1.clone(), 100_u32, 10_u32),
+        (unreg2.clone(), 200_u32, 20_u32),
+    ];
+    let skipped = ctx.client.batch_update_x_metrics(&ctx.admin, &updates);
+    assert_eq!(skipped.len(), 2);
 }

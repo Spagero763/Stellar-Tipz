@@ -105,14 +105,28 @@ impl TipzContract {
 
     /// Batch-update X metrics for multiple creators (admin only).
     ///
-    /// At most 50 entries per call. Unregistered addresses are skipped (with a
-    /// logged event) instead of failing the transaction.
+    /// At most 50 entries per call. Unregistered addresses and entries with
+    /// invalid metric values are skipped (with a logged event per skip).
+    /// Returns the list of skipped addresses.
+    ///
+    /// Emits an `XMetricsBatchCompleted` event with processed count, skipped
+    /// count, and the skipped addresses.
     pub fn batch_update_x_metrics(
         env: Env,
         caller: Address,
         updates: Vec<(Address, u32, u32)>,
-    ) -> Result<u32, ContractError> {
+    ) -> Result<Vec<Address>, ContractError> {
         admin::batch_update_x_metrics(&env, &caller, updates)
+    }
+
+    /// Preview which addresses would be skipped by `batch_update_x_metrics`
+    /// without modifying any on-chain state (dry-run mode). Admin only.
+    pub fn batch_update_x_metrics_preview(
+        env: Env,
+        caller: Address,
+        updates: Vec<(Address, u32, u32)>,
+    ) -> Result<Vec<Address>, ContractError> {
+        admin::batch_update_x_metrics_preview(&env, &caller, updates)
     }
 
     /// Get a profile by address.
@@ -159,12 +173,47 @@ impl TipzContract {
         tips::get_tip(&env, tip_id).ok_or(ContractError::NotFound)
     }
 
-    /// Return up to `count` recent tips received by `creator`, newest first.
+    /// Return up to `limit` recent tips received by `creator`, newest first.
     ///
-    /// Tips that have expired are silently omitted, so the returned vector may
-    /// contain fewer than `count` entries.
-    pub fn get_recent_tips(env: Env, creator: Address, count: u32) -> Vec<Tip> {
-        tips::get_recent_tips(&env, &creator, count)
+    /// - `limit` is capped at 50 per call.
+    /// - `offset`: number of tips to skip from the most recent (0 = start
+    ///   from latest). Use `get_creator_tip_count` to know the total for
+    ///   frontend pagination.
+    /// - Expired tips are silently omitted, so the result may contain fewer
+    ///   than `limit` entries.
+    pub fn get_recent_tips(env: Env, creator: Address, limit: u32, offset: u32) -> Vec<Tip> {
+        tips::get_recent_tips(&env, &creator, limit, offset)
+    }
+
+    /// Return the number of tips received by `creator` (within the ~7-day
+    /// TTL window tracked in temporary storage). Useful for frontend
+    /// pagination with `get_recent_tips`.
+    pub fn get_creator_tip_count(env: Env, creator: Address) -> u32 {
+        storage::get_creator_tip_count(&env, &creator)
+    }
+
+    /// Return the total number of tips ever sent (monotonically increasing).
+    ///
+    /// This counter lives in instance storage and never expires, unlike
+    /// individual tip records which have a ~7-day TTL. Use this together with
+    /// `TipSent` events to reconstruct full tip history via an off-chain
+    /// indexer.
+    pub fn get_tip_count(env: Env) -> u32 {
+        storage::get_tip_count(&env)
+    }
+
+    /// Return up to `limit` recent tips sent by `tipper`, newest first.
+    ///
+    /// Expired tips are silently omitted, so the returned vector may contain
+    /// fewer than `limit` entries.
+    pub fn get_tips_by_tipper(env: Env, tipper: Address, limit: u32) -> Vec<Tip> {
+        tips::get_tips_by_tipper(&env, &tipper, limit)
+    }
+
+    /// Return the number of tips sent by `tipper` (within the ~7-day TTL
+    /// window tracked in temporary storage).
+    pub fn get_tipper_tip_count(env: Env, tipper: Address) -> u32 {
+        storage::get_tipper_tip_count(&env, &tipper)
     }
 
     // ──────────────────────────────────────────────

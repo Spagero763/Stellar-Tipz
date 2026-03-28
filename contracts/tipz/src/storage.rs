@@ -66,6 +66,14 @@ pub enum DataKey {
     Paused,
     /// Minimum allowed tip amount in stroops
     MinTipAmount,
+    /// Number of tips sent by a specific tipper
+    TipperTipCount(Address),
+    /// Reverse index: (tipper, local_index) → global tip ID
+    TipperTip(Address, u32),
+    /// Number of tips received by a specific creator
+    CreatorTipCount(Address),
+    /// Reverse index: (creator, local_index) → global tip ID
+    CreatorTip(Address, u32),
 }
 
 /// Extend the contract instance TTL when a write transaction starts.
@@ -274,6 +282,62 @@ pub fn increment_tip_count(env: &Env) -> u32 {
         .instance()
         .set(&DataKey::TipCount, &(count + 1));
     count
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Per-tipper reverse index
+// ──────────────────────────────────────────────────────────────────────────────
+
+/// Returns the number of tips sent by `tipper`.
+pub fn get_tipper_tip_count(env: &Env, tipper: &Address) -> u32 {
+    env.storage()
+        .temporary()
+        .get(&DataKey::TipperTipCount(tipper.clone()))
+        .unwrap_or(0)
+}
+
+/// Records a new tip ID for `tipper` and bumps the per-tipper count.
+/// The reverse-index entry shares the same TTL as tip records.
+pub fn add_tipper_tip(env: &Env, tipper: &Address, tip_id: u32) {
+    let local_index = get_tipper_tip_count(env, tipper);
+
+    let idx_key = DataKey::TipperTip(tipper.clone(), local_index);
+    env.storage().temporary().set(&idx_key, &tip_id);
+    set_tip_ttl(env, &idx_key);
+
+    let count_key = DataKey::TipperTipCount(tipper.clone());
+    env.storage()
+        .temporary()
+        .set(&count_key, &(local_index + 1));
+    set_tip_ttl(env, &count_key);
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Per-creator reverse index
+// ──────────────────────────────────────────────────────────────────────────────
+
+/// Returns the number of tips received by `creator` (within the TTL window).
+pub fn get_creator_tip_count(env: &Env, creator: &Address) -> u32 {
+    env.storage()
+        .temporary()
+        .get(&DataKey::CreatorTipCount(creator.clone()))
+        .unwrap_or(0)
+}
+
+/// Records a new tip ID for `creator` and bumps the per-creator count.
+/// The reverse-index entry shares the same TTL as tip records.
+pub fn add_creator_tip(env: &Env, creator: &Address, tip_id: u32) {
+    let local_index = get_creator_tip_count(env, creator);
+
+    let idx_key = DataKey::CreatorTip(creator.clone(), local_index);
+    env.storage().temporary().set(&idx_key, &tip_id);
+    set_tip_ttl(env, &idx_key);
+
+    let count_key = DataKey::CreatorTipCount(creator.clone());
+    env.storage()
+        .temporary()
+        .set(&count_key, &(local_index + 1));
+    set_tip_ttl(env, &count_key);
 }
 
 // ──────────────────────────────────────────────────────────────────────────────

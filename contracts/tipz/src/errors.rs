@@ -44,4 +44,6 @@ pub enum ContractError {
     ContractPaused = 18,
     /// Tip amount is below the configured minimum
     TipBelowMinimum = 19,
+    /// Invalid X metrics values (e.g. unreasonable follower/engagement counts)
+    InvalidXMetrics = 21,
 }

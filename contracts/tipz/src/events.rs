@@ -8,7 +8,7 @@
 //! Topic tuple  → `(Symbol, Symbol)`   – identifies the event type
 //! Data tuple   → `(field, field, …)`  – the payload
 
-use soroban_sdk::{symbol_short, Address, Env, String};
+use soroban_sdk::{symbol_short, Address, Env, String, Vec};
 
 // ── Profile events ────────────────────────────────────────────────────────────
 
@@ -33,11 +33,30 @@ pub fn emit_profile_updated(env: &Env, owner: &Address) {
 // ── Tip events ────────────────────────────────────────────────────────────────
 
 /// Topics : `("tip", "sent")`
-/// Data   : `(from: Address, to: Address, amount: i128)`
-pub fn emit_tip_sent(env: &Env, from: &Address, to: &Address, amount: i128) {
+/// Data   : `(id: u32, tipper: Address, creator: Address, amount: i128, message: String, timestamp: u64)`
+///
+/// All tip fields are included so that off-chain indexers can reconstruct the
+/// complete tip history from events alone, without relying on temporary storage
+/// which expires after ~7 days.
+pub fn emit_tip_sent(
+    env: &Env,
+    tip_id: u32,
+    tipper: &Address,
+    creator: &Address,
+    amount: i128,
+    message: &String,
+    timestamp: u64,
+) {
     env.events().publish(
         (symbol_short!("tip"), symbol_short!("sent")),
-        (from.clone(), to.clone(), amount),
+        (
+            tip_id,
+            tipper.clone(),
+            creator.clone(),
+            amount,
+            message.clone(),
+            timestamp,
+        ),
     );
 }
 
@@ -118,5 +137,19 @@ pub fn emit_x_metrics_batch_skipped(env: &Env, creator: &Address) {
     env.events().publish(
         (symbol_short!("batch"), symbol_short!("skipped")),
         (creator.clone(),),
+    );
+}
+
+/// Topics : `("batch", "done")`
+/// Data   : `(processed: u32, skipped: u32, skipped_addrs: Vec<Address>)`
+pub fn emit_x_metrics_batch_completed(
+    env: &Env,
+    processed: u32,
+    skipped: u32,
+    skipped_addresses: Vec<Address>,
+) {
+    env.events().publish(
+        (symbol_short!("batch"), symbol_short!("done")),
+        (processed, skipped, skipped_addresses),
     );
 }
