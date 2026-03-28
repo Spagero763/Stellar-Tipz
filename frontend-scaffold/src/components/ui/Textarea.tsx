@@ -45,7 +45,7 @@ const Textarea: React.FC<TextareaProps> = ({
         rows={rows}
         maxLength={maxLength}
         className={`w-full px-4 py-3 border-2 border-black bg-white text-black font-medium
-          focus:outline-none focus:ring-0 focus:shadow-brutalist
+          focus:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus:shadow-brutalist
           placeholder:text-gray-400 resize-y ${error ? 'border-red-600' : ''} ${className}`}
         onChange={handleChange}
         value={value}

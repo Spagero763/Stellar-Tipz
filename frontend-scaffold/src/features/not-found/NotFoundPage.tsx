@@ -2,8 +2,11 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import PageContainer from '../../components/layout/PageContainer';
 import Button from '../../components/ui/Button';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 const NotFoundPage: React.FC = () => {
+  usePageTitle('Page Not Found');
+
   return (
     <PageContainer maxWidth="md">
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">

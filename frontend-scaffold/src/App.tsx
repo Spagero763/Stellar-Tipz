@@ -19,6 +19,12 @@ const App: React.FC = () => {
       <ScrollToTop />
       <ErrorBoundary>
         <div className="min-h-screen flex flex-col bg-white">
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-0 focus:left-0 focus:z-50 focus:bg-black focus:text-white focus:px-4 focus:py-2 focus:font-black focus:outline-none"
+          >
+            Skip to main content
+          </a>
           <Header />
           <div className="flex-1">
             <Routes>

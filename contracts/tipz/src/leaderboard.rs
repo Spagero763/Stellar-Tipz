@@ -211,6 +211,8 @@ pub fn get_leaderboard_rank(env: &Env, address: &Address) -> Option<u32> {
 ///
 /// If the address is not present this is a no-op.  Entries above the removed
 /// slot shift down by one position, preserving relative order.
+///
+/// Public API for the upcoming deregister flow; currently exercised only in tests.
 #[allow(dead_code)]
 pub fn remove_from_leaderboard(env: &Env, address: &Address) {
     let entries = load_entries(env);

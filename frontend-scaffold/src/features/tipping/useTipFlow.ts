@@ -2,7 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useTipz } from "../../hooks";
 
-export type TipFlowStep = "form" | "confirm" | "signing" | "submitting" | "success" | "error";
+export type TipFlowStep =
+  | "form"
+  | "confirm"
+  | "signing"
+  | "submitting"
+  | "success"
+  | "error";
 
 interface UseTipFlowReturn {
   step: TipFlowStep;
@@ -16,27 +22,33 @@ interface UseTipFlowReturn {
 export const useTipFlow = (creatorAddress: string): UseTipFlowReturn => {
   const { sendTip, txHash, txStatus, error, reset: resetTipz } = useTipz();
   const [step, setStep] = useState<TipFlowStep>("form");
-  const [draft, setDraft] = useState<{ amount: string; message: string } | null>(null);
+  const [draft, setDraft] = useState<{
+    amount: string;
+    message: string;
+  } | null>(null);
 
   useEffect(() => {
-    if (txStatus === "signing") {
-      setStep("signing");
-      return;
-    }
+    const timeoutId = setTimeout(() => {
+      if (txStatus === "signing") {
+        setStep("signing");
+        return;
+      }
 
-    if (txStatus === "submitting" || txStatus === "confirming") {
-      setStep("submitting");
-      return;
-    }
+      if (txStatus === "submitting" || txStatus === "confirming") {
+        setStep("submitting");
+        return;
+      }
 
-    if (txStatus === "success") {
-      setStep("success");
-      return;
-    }
+      if (txStatus === "success") {
+        setStep("success");
+        return;
+      }
 
-    if (txStatus === "error") {
-      setStep("error");
-    }
+      if (txStatus === "error") {
+        setStep("error");
+      }
+    }, 0);
+    return () => clearTimeout(timeoutId);
   }, [txStatus]);
 
   const goToConfirm = useCallback((amount: string, message: string) => {

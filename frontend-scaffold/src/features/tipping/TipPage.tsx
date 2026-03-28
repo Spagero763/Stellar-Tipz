@@ -11,11 +11,14 @@ import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import Textarea from "../../components/ui/Textarea";
 import { useWallet } from "../../hooks";
-import { mockProfile, mockTips } from "../mockData";
+import { mockProfile } from "../mockData";
 import TipPageSkeleton from "./TipPageSkeleton";
 import TipAmountInput from "./TipAmountInput";
 import TipResult from "./TipResult";
+import RecentTips from "./RecentTips";
+import TipConfirm from "./TipConfirm";
 import { useTipFlow } from "./useTipFlow";
+import { usePageTitle } from "@/hooks/usePageTitle";
 
 const TipPage: React.FC = () => {
   const { username } = useParams<{ username: string }>();
@@ -36,9 +39,15 @@ const TipPage: React.FC = () => {
     ...mockProfile,
     username: username || mockProfile.username,
   };
+
+  // Placeholder: in production this would be set when the creator lookup fails
+  const creatorNotFound = false;
+
+  usePageTitle(`Tip @${creator.username}`);
+
   const { step, goToConfirm, confirmAndSign, reset, error, txHash } = useTipFlow(creator.owner);
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     goToConfirm(amount, message);
   };
@@ -122,59 +131,51 @@ const TipPage: React.FC = () => {
             <form className="space-y-4" onSubmit={handleSubmit}>
               <TipAmountInput amount={amount} onChange={setAmount} balance={creator.balance} />
 
-            <Textarea
-              label="Message"
-              placeholder="Say why you are supporting this creator."
-              maxLength={160}
-              value={message}
-              onChange={(event) => setMessage(event.target.value)}
-            />
+              <Textarea
+                label="Message"
+                placeholder="Say why you are supporting this creator."
+                maxLength={160}
+                value={message}
+                onChange={(event) => setMessage(event.target.value)}
+              />
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-              {connected ? (
-                <Button
-                  type="submit"
-                  loading={step === "signing" || step === "submitting"}
-                  icon={<HeartHandshake size={18} />}
-                  iconRight={<ArrowRight size={18} />}
-                  className="sm:flex-1"
-                >
-                  {step === "confirm" ? "Continue" : "Send tip"}
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  icon={<Wallet size={18} />}
-                  onClick={connect}
-                  className="sm:flex-1"
-                >
-                  Connect wallet
-                </Button>
-              )}
+              <div className="flex flex-col gap-3 sm:flex-row">
+                {connected ? (
+                  <Button
+                    type="submit"
+                    loading={step === "signing" || step === "submitting"}
+                    icon={<HeartHandshake size={18} />}
+                    iconRight={<ArrowRight size={18} />}
+                    className="sm:flex-1"
+                  >
+                    {step === "confirm" ? "Continue" : "Send tip"}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    icon={<Wallet size={18} />}
+                    onClick={connect}
+                    className="sm:flex-1"
+                  >
+                    Connect wallet
+                  </Button>
+                )}
 
-              <Button type="button" variant="outline" onClick={reset}>
-                Clear
-              </Button>
-            </div>
+                <Button type="button" variant="outline" onClick={reset}>
+                  Clear
+                </Button>
+              </div>
             </form>
           )}
 
-          {step === "confirm" && (
-            <div className="space-y-3 border-2 border-black bg-yellow-50 p-4">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-600">Confirm tip</p>
-              <p className="text-sm font-bold text-gray-700">
-                You are about to send {amount} XLM to @{creator.username}.
-              </p>
-              <div className="flex gap-2">
-                <Button type="button" onClick={() => void confirmAndSign()} icon={<HeartHandshake size={16} />}>
-                  Confirm and sign
-                </Button>
-                <Button type="button" variant="outline" onClick={reset}>
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
+          <TipConfirm
+            open={step === "confirm"}
+            amount={amount}
+            username={creator.username}
+            onConfirm={() => void confirmAndSign()}
+            onCancel={reset}
+            submitting={step === "signing" || step === "submitting"}
+          />
 
           {step === "signing" || step === "submitting" ? (
             <TransactionStatus
@@ -209,21 +210,7 @@ const TipPage: React.FC = () => {
               View dashboard
             </Link>
           </div>
-          <div className="space-y-3">
-            {mockTips.slice(0, 3).map((tip) => (
-              <div key={`${tip.from}-${tip.timestamp}`} className="border-2 border-black p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">
-                    Supporter note
-                  </p>
-                  <AmountDisplay amount={tip.amount} />
-                </div>
-                <p className="mt-3 text-sm font-medium text-gray-700">
-                  {tip.message || "No message attached."}
-                </p>
-              </div>
-            ))}
-          </div>
+          <RecentTips />
         </Card>
       </section>
     </PageContainer>

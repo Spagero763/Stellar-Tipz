@@ -20,7 +20,7 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   ...props
 }) => {
-  const base = 'font-bold uppercase tracking-wide transition-transform duration-200 border-2 border-black';
+  const base = 'font-bold uppercase tracking-wide transition-transform duration-200 border-2 border-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2';
 
   const variants: Record<string, string> = {
     primary: 'bg-black text-white hover:-translate-x-1 hover:-translate-y-1',

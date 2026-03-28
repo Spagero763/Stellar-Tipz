@@ -19,7 +19,7 @@ const PageContainer: React.FC<PageContainerProps> = ({
   };
 
   return (
-    <main className={`${widths[maxWidth]} mx-auto px-4 py-8 ${className}`}>
+    <main id="main-content" tabIndex={-1} className={`${widths[maxWidth]} mx-auto px-4 py-8 ${className} focus:outline-none`}>
       {children}
     </main>
   );

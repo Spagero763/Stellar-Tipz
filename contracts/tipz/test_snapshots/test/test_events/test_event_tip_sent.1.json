@@ -90,6 +90,9 @@
             "data": {
               "vec": [
                 {
+                  "u32": 0
+                },
+                {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4"
                 },
                 {
@@ -100,6 +103,12 @@
                     "hi": 0,
                     "lo": 5000000
                   }
+                },
+                {
+                  "string": "thanks!"
+                },
+                {
+                  "u64": 1234567890
                 }
               ]
             }

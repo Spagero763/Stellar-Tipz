@@ -25,6 +25,7 @@ const ToastItem: React.FC<{ toast: Toast }> = ({ toast }) => {
       <button
         onClick={() => removeToast(toast.id)}
         className="shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
+        aria-label="Close notification"
       >
         <X className="h-4 w-4" />
       </button>
@@ -39,7 +40,7 @@ const ToastContainer: React.FC = () => {
   const visibleToasts = toasts.slice(-3);
 
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end">
+    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end" aria-live="polite" aria-atomic="true">
       <AnimatePresence mode="popLayout">
         {visibleToasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} />
