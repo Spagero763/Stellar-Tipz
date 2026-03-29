@@ -5,6 +5,8 @@ import { useContract } from './useContract';
 import { useToastStore } from '../store/toastStore';
 import { Profile, ContractStats, Tip } from '../types/contract';
 import { categorizeError, ERRORS } from '@/helpers/error';
+import { env } from '../helpers/env';
+import { mockProfile, mockTips } from '../features/mockData';
 
 const REFETCH_INTERVAL_MS = 30_000;
 
@@ -33,38 +35,42 @@ export interface DashboardData {
 
 /**
  * Fetches all data required by the dashboard and keeps it fresh.
- *
- * Behaviour:
- * - Only fetches when the wallet is connected and the user is registered.
- * - Polls every 30 seconds for live-ish updates.
- * - Preserves the previous (stale) data while a background refetch is in
- *   progress so the UI never shows an empty state during polling (optimistic UI).
- * - `balance` is available via `profile.balance`.
- * - `feeInfo` is available via `stats.feeBps` and `stats.totalFeesCollected`.
- * - `tips` is stubbed as an empty array until a contract query endpoint is
- *   available (forward-compatible with future contract changes).
  */
 export const useDashboard = (): DashboardData => {
   const { publicKey, connected } = useWalletStore();
-  const { getProfile, getStats } = useContract();
+  const { getProfile, getStats, getRecentTips } = useContract();
 
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [tips] = useState<Tip[]>([]);
+  const [tips, setTips] = useState<Tip[]>([]);
   const [stats, setStats] = useState<ContractStats | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Refs avoid stale closure issues inside the polling callback.
   const hasDataRef = useRef(false);
   const isFetchingRef = useRef(false);
-  // Tracks whether the user is registered so polling stops on unregistered wallets.
   const isRegisteredRef = useRef(true);
 
   const fetchDashboard = useCallback(async () => {
     if (!publicKey || !connected || isFetchingRef.current || !isRegisteredRef.current) return;
 
+    // Mock Fallback
+    if (env.useMockData) {
+      setProfile(mockProfile);
+      setTips(mockTips);
+      setStats({
+        totalCreators: 120,
+        totalTipsCount: 1540,
+        totalTipsVolume: "45000000000",
+        totalFeesCollected: "900000000",
+        feeBps: 200
+      });
+      setLoading(false);
+      isRegisteredRef.current = true;
+      hasDataRef.current = true;
+      return;
+    }
+
     isFetchingRef.current = true;
-    // Only show the full spinner on the very first fetch (no cached data yet).
     if (!hasDataRef.current) {
       setLoading(true);
     }
@@ -73,9 +79,10 @@ export const useDashboard = (): DashboardData => {
     try {
       const { addToast } = useToastStore.getState();
 
-      const [profileResult, statsResult] = await Promise.allSettled([
+      const [profileResult, statsResult, tipsResult] = await Promise.allSettled([
         getProfile(publicKey),
         getStats(),
+        getRecentTips(publicKey, 10, 0),
       ]);
 
       if (profileResult.status === 'fulfilled') {
@@ -87,6 +94,7 @@ export const useDashboard = (): DashboardData => {
           isRegisteredRef.current = false;
           setProfile(null);
           setStats(null);
+          setTips([]);
           hasDataRef.current = false;
         } else {
           setError(err instanceof Error ? err.message : 'Failed to fetch profile');
@@ -95,13 +103,19 @@ export const useDashboard = (): DashboardData => {
 
       if (statsResult.status === 'fulfilled') {
         setStats(statsResult.value);
-      } else {
+      } else if (statsResult.status === 'rejected') {
         const err = statsResult.reason;
         console.error('Failed to fetch stats:', err);
         addToast({ 
           message: categorizeError(err) === 'network' ? ERRORS.NETWORK : 'Could not fetch latest platform stats.', 
           type: 'error' 
         });
+      }
+
+      if (tipsResult.status === 'fulfilled') {
+        setTips(tipsResult.value);
+      } else if (tipsResult.status === 'rejected') {
+        console.error('Failed to fetch tips:', tipsResult.reason);
       }
 
       if (profileResult.status === 'fulfilled') {
@@ -113,28 +127,27 @@ export const useDashboard = (): DashboardData => {
       setLoading(false);
       isFetchingRef.current = false;
     }
-  }, [publicKey, connected, getProfile, getStats]);
+  }, [publicKey, connected, getProfile, getStats, getRecentTips]);
 
-  // Initial fetch and cleanup when the connected wallet changes.
   useEffect(() => {
     if (publicKey && connected) {
-      // Reset tracking refs whenever the wallet identity changes.
       isRegisteredRef.current = true;
       hasDataRef.current = false;
       setProfile(null);
       setStats(null);
+      setTips([]);
       setError(null);
       fetchDashboard();
     } else {
       setProfile(null);
       setStats(null);
+      setTips([]);
       setError(null);
       hasDataRef.current = false;
       isRegisteredRef.current = true;
     }
   }, [publicKey, connected]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Polling interval — 30 s for live-ish updates.
   useEffect(() => {
     if (!publicKey || !connected) return;
 
@@ -147,7 +160,6 @@ export const useDashboard = (): DashboardData => {
 
   const refetch = useCallback(() => {
     if (publicKey && connected) {
-      // Re-enable polling in case it was stopped by a not-registered error.
       isRegisteredRef.current = true;
       fetchDashboard();
     }

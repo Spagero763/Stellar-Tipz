@@ -19,6 +19,7 @@ import {
 import { TESTNET_DETAILS } from '../helpers/network';
 import {
   Profile,
+  Tip,
   LeaderboardEntry,
   ContractStats,
   getCreditTier as calculateCreditTier,
@@ -97,6 +98,83 @@ export const useContract = () => {
       .build();
 
     return simulateTx<ContractStats>(tx, server);
+  }, [contractId, wallet.publicKey, server]);
+
+  const getRecentTips = useCallback(async (creator: string, limit: number, offset: number): Promise<Tip[]> => {
+    const contract = new Contract(contractId);
+    const txBuilder = await getTxBuilder(
+      wallet.publicKey || "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+      BASE_FEE,
+      server,
+      TESTNET_DETAILS.networkPassphrase
+    );
+    const tx = txBuilder
+      .addOperation(
+        contract.call(
+          "get_recent_tips",
+          accountToScVal(creator),
+          nativeToScVal(limit, { type: "u32" }),
+          nativeToScVal(offset, { type: "u32" })
+        )
+      )
+      .setTimeout(TimeoutInfinite)
+      .build();
+
+    return simulateTx<Tip[]>(tx, server);
+  }, [contractId, wallet.publicKey, server]);
+
+  const getCreatorTipCount = useCallback(async (creator: string): Promise<number> => {
+    const contract = new Contract(contractId);
+    const txBuilder = await getTxBuilder(
+      wallet.publicKey || "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+      BASE_FEE,
+      server,
+      TESTNET_DETAILS.networkPassphrase
+    );
+    const tx = txBuilder
+      .addOperation(contract.call("get_creator_tip_count", accountToScVal(creator)))
+      .setTimeout(TimeoutInfinite)
+      .build();
+
+    return simulateTx<number>(tx, server);
+  }, [contractId, wallet.publicKey, server]);
+
+  const getTipsByTipper = useCallback(async (tipper: string, limit: number): Promise<Tip[]> => {
+    const contract = new Contract(contractId);
+    const txBuilder = await getTxBuilder(
+      wallet.publicKey || "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+      BASE_FEE,
+      server,
+      TESTNET_DETAILS.networkPassphrase
+    );
+    const tx = txBuilder
+      .addOperation(
+        contract.call(
+          "get_tips_by_tipper",
+          accountToScVal(tipper),
+          nativeToScVal(limit, { type: "u32" })
+        )
+      )
+      .setTimeout(TimeoutInfinite)
+      .build();
+
+    return simulateTx<Tip[]>(tx, server);
+  }, [contractId, wallet.publicKey, server]);
+
+  const getTipperTipCount = useCallback(async (tipper: string): Promise<number> => {
+    const contract = new Contract(contractId);
+    const txBuilder = await getTxBuilder(
+      wallet.publicKey || "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+      BASE_FEE,
+      server,
+      TESTNET_DETAILS.networkPassphrase
+    );
+    const tx = txBuilder
+      .addOperation(contract.call("get_tipper_tip_count", accountToScVal(tipper)))
+      .setTimeout(TimeoutInfinite)
+      .build();
+
+    return simulateTx<number>(tx, server);
   }, [contractId, wallet.publicKey, server]);
 
   const getCreditTier = useCallback(async (address: string) => {
@@ -229,6 +307,10 @@ export const useContract = () => {
     getProfileByUsername,
     getLeaderboard,
     getStats,
+    getRecentTips,
+    getCreatorTipCount,
+    getTipsByTipper,
+    getTipperTipCount,
     getCreditTier,
     registerProfile,
     updateProfile,

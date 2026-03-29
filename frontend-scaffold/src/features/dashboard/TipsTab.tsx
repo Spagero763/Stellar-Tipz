@@ -3,7 +3,10 @@ import React, { useMemo, useState } from "react";
 import EmptyState from "../../components/ui/EmptyState";
 import Input from "../../components/ui/Input";
 import Table from "../../components/ui/Table";
-import { mockTips } from "../mockData";
+import { useTips } from "../../hooks/useTips";
+import { useWalletStore } from "../../store/walletStore";
+import Loader from "../../components/ui/Loader";
+import Pagination from "../../components/ui/Pagination";
 
 const PAGE_SIZE = 20;
 
@@ -15,7 +18,7 @@ function stroopsToXlm(stroops: string): string {
 }
 
 function formatTimestamp(ts: number): string {
-  return new Date(ts).toLocaleDateString("en-US", {
+  return new Date(ts * 1000).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -30,20 +33,23 @@ function truncateAddress(address: string): string {
 }
 
 const TipsTab: React.FC = () => {
+  const { publicKey } = useWalletStore();
+  const [currentPage, setCurrentPage] = useState(1);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [senderSearch, setSenderSearch] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const { tips, totalCount, loading, error } = useTips(publicKey || "", "creator", 100);
 
   const filtered = useMemo(() => {
-    return mockTips.filter((tip) => {
+    return tips.filter((tip) => {
       if (startDate) {
         const start = new Date(startDate).getTime();
-        if (tip.timestamp < start) return false;
+        if (tip.timestamp * 1000 < start) return false;
       }
       if (endDate) {
         const end = new Date(endDate).getTime() + 24 * 60 * 60 * 1000 - 1;
-        if (tip.timestamp > end) return false;
+        if (tip.timestamp * 1000 > end) return false;
       }
       if (senderSearch.trim()) {
         const q = senderSearch.trim().toLowerCase();
@@ -51,13 +57,12 @@ const TipsTab: React.FC = () => {
       }
       return true;
     });
-  }, [startDate, endDate, senderSearch]);
+  }, [tips, startDate, endDate, senderSearch]);
 
-  const totalCount = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
   const startIdx = (safePage - 1) * PAGE_SIZE;
-  const endIdx = Math.min(startIdx + PAGE_SIZE, totalCount);
+  const endIdx = Math.min(startIdx + PAGE_SIZE, filtered.length);
   const paginated = filtered.slice(startIdx, endIdx);
 
   const tableData = paginated.map((tip) => ({
@@ -74,9 +79,21 @@ const TipsTab: React.FC = () => {
     { key: "message", label: "Message" },
   ];
 
-  const handleFilterChange = () => {
-    setCurrentPage(1);
-  };
+  if (loading && tips.length === 0) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader size="lg" text="Loading tips history..." />
+      </div>
+    );
+  }
+
+  if (error && tips.length === 0) {
+    return (
+      <div className="py-20">
+        <EmptyState title="Error fetching tips" description={error} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -91,7 +108,7 @@ const TipsTab: React.FC = () => {
             value={startDate}
             onChange={(e) => {
               setStartDate(e.target.value);
-              handleFilterChange();
+              setCurrentPage(1);
             }}
             className="h-10 border-2 border-black bg-white px-3 text-sm font-medium focus:outline-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
           />
@@ -105,7 +122,7 @@ const TipsTab: React.FC = () => {
             value={endDate}
             onChange={(e) => {
               setEndDate(e.target.value);
-              handleFilterChange();
+              setCurrentPage(1);
             }}
             className="h-10 border-2 border-black bg-white px-3 text-sm font-medium focus:outline-none focus:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
           />
@@ -117,16 +134,17 @@ const TipsTab: React.FC = () => {
             value={senderSearch}
             onChange={(e) => {
               setSenderSearch(e.target.value);
-              handleFilterChange();
+              setCurrentPage(1);
             }}
           />
         </div>
       </div>
 
       {/* Row count */}
-      {totalCount > 0 && (
+      {filtered.length > 0 && (
         <p className="text-sm font-bold text-gray-600">
-          Showing {startIdx + 1}–{endIdx} of {totalCount} tip{totalCount !== 1 ? "s" : ""}
+          Showing {startIdx + 1}–{endIdx} of {filtered.length} tip{filtered.length !== 1 ? "s" : ""}
+          {totalCount > tips.length && ` (from ${tips.length} recently loaded)`}
         </p>
       )}
 
@@ -134,7 +152,7 @@ const TipsTab: React.FC = () => {
       {paginated.length === 0 ? (
         <EmptyState
           title="No tips found"
-          description="Try adjusting your date range or sender address filter."
+          description={tips.length === 0 ? "You haven't received any tips yet." : "Try adjusting your filters."}
         />
       ) : (
         <div className="overflow-x-auto">
@@ -142,28 +160,12 @@ const TipsTab: React.FC = () => {
         </div>
       )}
 
-      {/* Simple pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            disabled={safePage === 1}
-            className="border-2 border-black px-4 py-2 text-sm font-black uppercase disabled:opacity-40 hover:bg-black hover:text-white transition-colors"
-          >
-            Prev
-          </button>
-          <span className="text-sm font-bold">
-            Page {safePage} of {totalPages}
-          </span>
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            disabled={safePage === totalPages}
-            className="border-2 border-black px-4 py-2 text-sm font-black uppercase disabled:opacity-40 hover:bg-black hover:text-white transition-colors"
-          >
-            Next
-          </button>
-        </div>
-      )}
+      {/* Pagination */}
+      <Pagination
+        currentPage={safePage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 };

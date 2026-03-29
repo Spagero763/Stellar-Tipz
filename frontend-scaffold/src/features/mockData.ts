@@ -14,8 +14,8 @@ export const mockProfile: Profile = {
   totalTipsReceived: "2845000000",
   totalTipsCount: 126,
   balance: "1294000000",
-  registeredAt: 1734307200000,
-  updatedAt: 1741824000000,
+  registeredAt: 1734307200,
+  updatedAt: 1741824000,
 };
 
 export const mockTips: Tip[] = [
@@ -24,42 +24,42 @@ export const mockTips: Tip[] = [
     to: mockProfile.owner,
     amount: "125000000",
     message: "Your thread on Stellar fees saved me hours.",
-    timestamp: Date.now() - 1000 * 60 * 18,
+    timestamp: Math.floor((Date.now() - 1000 * 60 * 18) / 1000),
   },
   {
     from: "GACCTSUPPORTERTWO1234567890EXAMPLE2222222222222",
     to: mockProfile.owner,
     amount: "50000000",
     message: "Keep shipping these explainers.",
-    timestamp: Date.now() - 1000 * 60 * 60 * 3,
+    timestamp: Math.floor((Date.now() - 1000 * 60 * 60 * 3) / 1000),
   },
   {
     from: "GACCTSUPPORTERTHREE1234567890EXAMPLE33333333333",
     to: mockProfile.owner,
     amount: "250000000",
     message: "Tipped from your live workshop audience.",
-    timestamp: Date.now() - 1000 * 60 * 60 * 26,
+    timestamp: Math.floor((Date.now() - 1000 * 60 * 60 * 26) / 1000),
   },
   {
     from: "GACCTSUPPORTERFOUR1234567890EXAMPLE444444444444",
     to: mockProfile.owner,
     amount: "80000000",
     message: "",
-    timestamp: Date.now() - 1000 * 60 * 60 * 48,
+    timestamp: Math.floor((Date.now() - 1000 * 60 * 60 * 48) / 1000),
   },
   {
     from: "GACCTSUPPORTERFIVE1234567890EXAMPLE555555555555",
     to: mockProfile.owner,
     amount: "150000000",
     message: "For the wallet onboarding guide.",
-    timestamp: Date.now() - 1000 * 60 * 60 * 72,
+    timestamp: Math.floor((Date.now() - 1000 * 60 * 60 * 72) / 1000),
   },
   {
     from: "GACCTSUPPORTERSIX1234567890EXAMPLE6666666666666",
     to: mockProfile.owner,
     amount: "210000000",
     message: "Loved the hackathon demo.",
-    timestamp: Date.now() - 1000 * 60 * 60 * 96,
+    timestamp: Math.floor((Date.now() - 1000 * 60 * 60 * 96) / 1000),
   },
 ];
 

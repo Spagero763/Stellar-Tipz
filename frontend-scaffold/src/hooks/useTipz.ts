@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useContract } from './useContract';
 
 export type TxStatus = 'idle' | 'signing' | 'submitting' | 'confirming' | 'success' | 'error';
 
@@ -26,37 +27,56 @@ const initialState: TipState = {
 
 export const useTipz = (): UseTipzReturn => {
   const [state, setState] = useState<TipState>(initialState);
+  const { sendTip: contractSendTip, withdrawTips: contractWithdrawTips } = useContract();
 
   const sendTip = useCallback(async (creator: string, amount: string, message: string): Promise<void> => {
     setState({ ...initialState, sending: true, txStatus: 'signing' });
     try {
-      setState((prev) => ({ ...prev, txStatus: 'submitting' }));
-      // Signing and submission delegated to the caller via the wallet hook.
-      // Placeholder for contract invocation wired in issue #71.
-      void creator;
-      void amount;
-      void message;
-      setState((prev) => ({ ...prev, txStatus: 'confirming' }));
-      setState((prev) => ({ ...prev, sending: false, txStatus: 'success' }));
+      // The useContract.sendTip method handles signing and submission
+      const result = await contractSendTip(creator, amount, message);
+      
+      setState((prev) => ({ 
+        ...prev, 
+        txStatus: 'success', 
+        sending: false, 
+        txHash: result // Assuming the contract method returns the tx hash/id
+      }));
     } catch (err) {
+      console.error('Tip transaction failed:', err);
       const message = err instanceof Error ? err.message : 'Failed to send tip';
-      setState((prev) => ({ ...prev, sending: false, error: message, txStatus: 'error' }));
+      setState((prev) => ({ 
+        ...prev, 
+        sending: false, 
+        error: message, 
+        txStatus: 'error' 
+      }));
+      throw err; // Re-throw to allow component-level handling
     }
-  }, []);
+  }, [contractSendTip]);
 
   const withdrawTips = useCallback(async (amount: string): Promise<void> => {
     setState({ ...initialState, withdrawing: true, txStatus: 'signing' });
     try {
-      setState((prev) => ({ ...prev, txStatus: 'submitting' }));
-      // Placeholder for contract invocation wired in issue #71.
-      void amount;
-      setState((prev) => ({ ...prev, txStatus: 'confirming' }));
-      setState((prev) => ({ ...prev, withdrawing: false, txStatus: 'success' }));
+      const result = await contractWithdrawTips(amount);
+      
+      setState((prev) => ({ 
+        ...prev, 
+        txStatus: 'success', 
+        withdrawing: false, 
+        txHash: result 
+      }));
     } catch (err) {
+      console.error('Withdrawal failed:', err);
       const message = err instanceof Error ? err.message : 'Failed to withdraw tips';
-      setState((prev) => ({ ...prev, withdrawing: false, error: message, txStatus: 'error' }));
+      setState((prev) => ({ 
+        ...prev, 
+        withdrawing: false, 
+        error: message, 
+        txStatus: 'error' 
+      }));
+      throw err;
     }
-  }, []);
+  }, [contractWithdrawTips]);
 
   const reset = useCallback(() => {
     setState(initialState);

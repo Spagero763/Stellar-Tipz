@@ -1,17 +1,39 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
 
 import AmountDisplay from '@/components/shared/AmountDisplay';
 import EmptyState from '@/components/ui/EmptyState';
-import { mockTips } from '@/features/mockData';
+import { useTips } from '@/hooks/useTips';
+import { useContract } from '@/hooks';
+import { useState, useEffect } from 'react';
+import Loader from '@/components/ui/Loader';
 
 const RecentTips: React.FC = () => {
-  if (mockTips.length === 0) {
+  const { username } = useParams<{ username: string }>();
+  const { getProfileByUsername } = useContract();
+  const [targetAddress, setTargetAddress] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (username) {
+      getProfileByUsername(username)
+        .then(p => setTargetAddress(p.owner))
+        .catch(() => setTargetAddress(null));
+    }
+  }, [username, getProfileByUsername]);
+
+  const { tips, loading } = useTips(targetAddress || "", "creator", 3);
+
+  if (loading && tips.length === 0) {
+    return <div className="py-10 flex justify-center"><Loader size="sm" /></div>;
+  }
+
+  if (tips.length === 0) {
     return <EmptyState title="No recent tips" description="Recent tip activity will appear here." />;
   }
 
   return (
     <div className="space-y-3">
-      {mockTips.slice(0, 3).map((tip) => (
+      {tips.map((tip) => (
         <div key={`${tip.from}-${tip.timestamp}`} className="border-2 border-black p-4">
           <div className="flex items-center justify-between gap-4">
             <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-500">Supporter note</p>

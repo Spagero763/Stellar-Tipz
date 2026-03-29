@@ -25,7 +25,6 @@ import { useWalletStore } from "@/store/walletStore";
 import ErrorState from "@/components/shared/ErrorState";
 import { categorizeError } from "@/helpers/error";
 
-import { mockTips } from "../mockData";
 import EarningsChart from "./EarningsChart";
 import EarningsTab from "./EarningsTab";
 import OverviewTab from "./OverviewTab";
@@ -39,9 +38,9 @@ const DashboardPage: React.FC = () => {
   usePageTitle("Dashboard");
 
   const { connected } = useWalletStore();
-  const { profile, tips, stats, loading, error, refetch } = useDashboard();
+  const { profile, tips, loading, error, refetch } = useDashboard();
 
-  const displayTips = tips.length > 0 ? tips : mockTips;
+  const displayTips = tips;
   const tipsPreviewPages = Math.max(
     1,
     Math.ceil(displayTips.length / TIPS_PREVIEW),
@@ -147,7 +146,7 @@ const DashboardPage: React.FC = () => {
       id: "earnings",
       label: "Earnings",
       content: (
-        <EarningsTab profile={creator} stats={stats} loading={loading} />
+        <EarningsTab />
       ),
     },
     {

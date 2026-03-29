@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 
 import { useContract } from "./useContract";
 import { LeaderboardEntry } from "../types/contract";
+import { env } from "../helpers/env";
+import { mockLeaderboard } from "../features/mockData";
 
 const REFETCH_INTERVAL_MS = 60_000; // 60 seconds
 const CACHE_KEY = "leaderboard_cache";
@@ -21,14 +23,6 @@ export interface LeaderboardData {
 
 /**
  * Fetches leaderboard data from the contract and keeps it fresh.
- *
- * Behaviour:
- * - Fetches top 50 creators sorted by total tips received (descending).
- * - Polls every 60 seconds for live updates.
- * - Preserves the previous (stale) data while a background refetch is in
- *   progress so the UI never shows an empty state during polling (optimistic UI).
- * - Caches data in sessionStorage to prevent re-fetch on page revisit
- *   (cache expires after 5 minutes).
  */
 export const useLeaderboard = (): LeaderboardData => {
   const { getLeaderboard } = useContract();
@@ -37,7 +31,6 @@ export const useLeaderboard = (): LeaderboardData => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Refs avoid stale closure issues inside the polling callback.
   const hasDataRef = useRef(false);
   const isFetchingRef = useRef(false);
 
@@ -46,6 +39,8 @@ export const useLeaderboard = (): LeaderboardData => {
    */
   const loadFromCache = useCallback((): LeaderboardEntry[] | null => {
     try {
+      if (env.useMockData) return mockLeaderboard;
+
       const cached = sessionStorage.getItem(CACHE_KEY);
       if (!cached) return null;
 
@@ -60,7 +55,6 @@ export const useLeaderboard = (): LeaderboardData => {
 
       return cachedEntries;
     } catch {
-      // If cache is corrupted, remove it
       sessionStorage.removeItem(CACHE_KEY);
       return null;
     }
@@ -71,21 +65,29 @@ export const useLeaderboard = (): LeaderboardData => {
    */
   const saveToCache = useCallback((data: LeaderboardEntry[]): void => {
     try {
+      if (env.useMockData) return;
       const cacheData: CacheData = {
         entries: data,
         timestamp: Date.now(),
       };
       sessionStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
     } catch {
-      // Silently fail if sessionStorage is unavailable (e.g., private browsing)
+      // Silently fail
     }
   }, []);
 
   const fetchLeaderboard = useCallback(async () => {
     if (isFetchingRef.current) return;
 
+    // Mock Fallback
+    if (env.useMockData) {
+      setEntries(mockLeaderboard);
+      setLoading(false);
+      hasDataRef.current = true;
+      return;
+    }
+
     isFetchingRef.current = true;
-    // Only show the full spinner on the very first fetch (no cached data yet).
     if (!hasDataRef.current) {
       setLoading(true);
     }
@@ -98,7 +100,6 @@ export const useLeaderboard = (): LeaderboardData => {
       hasDataRef.current = true;
       saveToCache(fetchedEntries);
     } catch (err) {
-      // Network / contract failure — preserve stale data (optimistic UI).
       setError(
         err instanceof Error ? err.message : "Failed to fetch leaderboard data",
       );
@@ -108,24 +109,23 @@ export const useLeaderboard = (): LeaderboardData => {
     }
   }, [getLeaderboard, saveToCache]);
 
-  // Initial fetch: try cache first, then fetch from contract
   useEffect(() => {
     const cachedEntries = loadFromCache();
 
     if (cachedEntries) {
-      // Use cached data immediately
       setEntries(cachedEntries);
       hasDataRef.current = true;
-      // Fetch fresh data in the background
-      fetchLeaderboard();
+      if (!env.useMockData) {
+        fetchLeaderboard();
+      }
     } else {
-      // No cache, fetch immediately
       fetchLeaderboard();
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Polling interval — 60 s for live updates.
   useEffect(() => {
+    if (env.useMockData) return;
+
     const id = setInterval(() => {
       fetchLeaderboard();
     }, REFETCH_INTERVAL_MS);
@@ -134,7 +134,6 @@ export const useLeaderboard = (): LeaderboardData => {
   }, [fetchLeaderboard]);
 
   const refetch = useCallback(() => {
-    // Clear cache and force a fresh fetch
     sessionStorage.removeItem(CACHE_KEY);
     hasDataRef.current = false;
     fetchLeaderboard();

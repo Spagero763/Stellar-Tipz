@@ -5,7 +5,9 @@ import EmptyState from '@/components/ui/EmptyState';
 import Pagination from '@/components/ui/Pagination';
 import Table from '@/components/ui/Table';
 import { truncateString } from '@/helpers/format';
-import { mockTips } from '@/features/mockData';
+import { useTips } from '../../hooks/useTips';
+import { useWalletStore } from '../../store/walletStore';
+import Loader from '../../components/ui/Loader';
 
 type SortBy = 'date' | 'amount';
 type DateRange = 'week' | 'month' | 'all';
@@ -20,7 +22,7 @@ const rangeCutoff = (range: DateRange): number => {
 };
 
 const formatDate = (timestamp: number): string => {
-  return new Date(timestamp).toLocaleDateString('en-US', {
+  return new Date(timestamp * 1000).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -35,13 +37,16 @@ const toCsv = (rows: Array<{ date: string; from: string; amount: string; message
 };
 
 const TipHistory: React.FC = () => {
+  const { publicKey } = useWalletStore();
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [range, setRange] = useState<DateRange>('all');
   const [page, setPage] = useState(1);
 
+  const { tips, loading, error } = useTips(publicKey || "", "creator", 100);
+
   const filteredAndSorted = useMemo(() => {
     const cutoff = rangeCutoff(range);
-    const filtered = mockTips.filter((tip) => (cutoff === 0 ? true : tip.timestamp >= cutoff));
+    const filtered = tips.filter((tip) => (cutoff === 0 ? true : tip.timestamp * 1000 >= cutoff));
 
     const sorted = [...filtered].sort((a, b) => {
       if (sortBy === 'amount') {
@@ -51,10 +56,9 @@ const TipHistory: React.FC = () => {
     });
 
     return sorted;
-  }, [sortBy, range]);
+  }, [tips, sortBy, range]);
 
   const totalPages = Math.max(1, Math.ceil(filteredAndSorted.length / PAGE_SIZE));
-
   const safePage = Math.min(page, totalPages);
 
   const pagedTips = useMemo(() => {
@@ -63,36 +67,31 @@ const TipHistory: React.FC = () => {
   }, [filteredAndSorted, safePage]);
 
   const tableRows = pagedTips.map((tip) => {
-    const txHash = `TX-${tip.timestamp.toString(16).toUpperCase()}`;
+    // Contract Tips don't have txHash yet, so we use a placeholder or derived ID
+    const txHash = `T-${tip.timestamp.toString(16).toUpperCase()}`;
     return {
       date: formatDate(tip.timestamp),
       from: truncateString(tip.from),
       amount: (Number(tip.amount) / 1e7).toFixed(2),
       message: tip.message || 'No message',
       txHash: (
-        <a
-          href={`https://stellar.expert/explorer/public/tx/${txHash}`}
-          target="_blank"
-          rel="noreferrer"
-          className="underline font-bold"
-        >
+        <span className="font-mono text-xs text-gray-400">
           {truncateString(txHash)}
-        </a>
+        </span>
       ),
       txHashRaw: txHash,
     };
   });
 
-  const exportRows = tableRows.map((row) => ({
-    date: row.date,
-    from: row.from,
-    amount: row.amount,
-    message: row.message,
-    txHash: row.txHashRaw,
-  }));
-
   const handleExportCsv = () => {
-    if (exportRows.length === 0) return;
+    if (tableRows.length === 0) return;
+    const exportRows = filteredAndSorted.map(tip => ({
+      date: formatDate(tip.timestamp),
+      from: tip.from,
+      amount: (Number(tip.amount) / 1e7).toFixed(2),
+      message: tip.message || '',
+      txHash: `T-${tip.timestamp.toString(16).toUpperCase()}`
+    }));
     const csv = toCsv(exportRows);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -103,6 +102,14 @@ const TipHistory: React.FC = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(link.href);
   };
+
+  if (loading && tips.length === 0) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader size="lg" text="Loading history..." />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -126,14 +133,17 @@ const TipHistory: React.FC = () => {
           <Button size="sm" variant={range === 'all' ? 'primary' : 'outline'} onClick={() => { setRange('all'); setPage(1); }}>
             All time
           </Button>
-          <Button size="sm" variant="outline" onClick={handleExportCsv}>
+          <Button size="sm" variant="outline" onClick={handleExportCsv} disabled={tips.length === 0}>
             Export CSV
           </Button>
         </div>
       </div>
 
       {tableRows.length === 0 ? (
-        <EmptyState title="No tips yet" description="Tip history appears here once supporters start sending tips." />
+        <EmptyState 
+          title="No history found" 
+          description={error || "Your tip history will appear here once supporters begin sending tips."} 
+        />
       ) : (
         <>
           <Table
@@ -142,7 +152,7 @@ const TipHistory: React.FC = () => {
               { key: 'from', label: 'From' },
               { key: 'amount', label: 'Amount (XLM)', align: 'right' },
               { key: 'message', label: 'Message' },
-              { key: 'txHash', label: 'TX Hash' },
+              { key: 'txHash', label: 'ID' },
             ]}
             data={tableRows}
           />

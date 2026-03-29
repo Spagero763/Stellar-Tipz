@@ -1,10 +1,11 @@
 import { Gift } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 
 import TipCard from '@/components/shared/TipCard';
 import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
-import { mockTips } from '../mockData';
+import { useTips } from '@/hooks/useTips';
+import Loader from '@/components/ui/Loader';
 
 interface ActivityFeedProps {
   /** Creator address to filter tips for */
@@ -14,38 +15,22 @@ interface ActivityFeedProps {
 }
 
 const ActivityFeed: React.FC<ActivityFeedProps> = ({ address, limit = 5 }) => {
-  const [displayCount, setDisplayCount] = useState(limit);
+  const { tips, loading, error, loadMore, hasMore } = useTips(address, "creator", limit);
 
-  /**
-   * Filter tips received by the given address, sorted newest first.
-   * Placeholder: uses mock data until contract is deployed.
-   */
-  const filteredAndSorted = useMemo(() => {
-    return mockTips
-      .filter((tip) => tip.to === address)
-      .sort((a, b) => b.timestamp - a.timestamp);
-  }, [address]);
+  if (loading && tips.length === 0) {
+    return (
+      <div className="flex justify-center py-12">
+        <Loader size="lg" text="Fetching activity..." />
+      </div>
+    );
+  }
 
-  /** Tips visible at current pagination state */
-  const visibleTips = useMemo(() => {
-    return filteredAndSorted.slice(0, displayCount);
-  }, [filteredAndSorted, displayCount]);
-
-  /** Whether there are more tips to load */
-  const hasMore = visibleTips.length < filteredAndSorted.length;
-
-  /** Load the next batch of tips */
-  const handleLoadMore = () => {
-    setDisplayCount((prev) => prev + limit);
-  };
-
-  // Empty state: no tips received
-  if (filteredAndSorted.length === 0) {
+  if (tips.length === 0) {
     return (
       <EmptyState
         icon={<Gift size={32} />}
         title="No tips received yet"
-        description="Share your public profile link and your first supporter will appear here."
+        description={error || "Share your public profile link and your first supporter will appear here."}
       />
     );
   }
@@ -54,7 +39,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ address, limit = 5 }) => {
     <div className="space-y-4">
       {/* List of tips (newest first) */}
       <div className="grid gap-4 md:grid-cols-2">
-        {visibleTips.map((tip) => (
+        {tips.map((tip) => (
           <TipCard
             key={`${tip.from}-${tip.timestamp}`}
             tip={tip}
@@ -67,7 +52,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ address, limit = 5 }) => {
       {/* Load More button */}
       {hasMore && (
         <div className="flex justify-center pt-4">
-          <Button variant="outline" onClick={handleLoadMore}>
+          <Button variant="outline" onClick={loadMore} loading={loading}>
             Load More
           </Button>
         </div>
