@@ -118,3 +118,30 @@ pub struct ContractStats {
     /// Current fee in basis points
     pub fee_bps: u32,
 }
+
+/// Full contract configuration (superset of ContractStats).
+/// Returns all admin-readable configuration in a single call.
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct ContractConfig {
+    /// Contract admin address
+    pub admin: Address,
+    /// Address that receives fees
+    pub fee_collector: Address,
+    /// Withdrawal fee in basis points
+    pub fee_bps: u32,
+    /// Native XLM token contract address (SAC)
+    pub native_token: Address,
+    /// Total registered creators
+    pub total_creators: u32,
+    /// Total tips sent (count)
+    pub total_tips_count: u32,
+    /// Total tip volume in stroops
+    pub total_tips_volume: i128,
+    /// Total fees collected in stroops
+    pub total_fees_collected: i128,
+    /// Flag indicating contract is initialized
+    pub is_initialized: bool,
+    /// On-chain contract version
+    pub version: u32,
+}

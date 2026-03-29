@@ -19,6 +19,7 @@ import OverviewTab from "./OverviewTab";
 import TipsTab from "./TipsTab";
 import { useWalletStore } from "../../store/walletStore";
 import { useDashboard, usePageTitle } from "../../hooks";
+import { AmountDisplay, CreditBadge, Tabs, TipCard } from '@/components';
 
 const EarningsTab: React.FC<{ profile: any; stats: any; loading: boolean }> = () => (
   <div className="pt-6">
@@ -65,6 +66,7 @@ const DashboardPage: React.FC = () => {
       </PageContainer>
     );
   }
+
 
   const displayTips = tips && tips.length > 0 ? tips : mockTips;
   const totalPages = Math.ceil(displayTips.length / 10) || 1;
@@ -181,11 +183,10 @@ const DashboardPage: React.FC = () => {
         </div>
         <div className="flex items-center gap-3">
           <Link to="/profile">
-            <Button variant="outline" size="sm">
-              View Public Profile
-            </Button>
+            <Button variant="outline" size="sm">View Public Profile</Button>
           </Link>
-          <div className="text-sm font-bold text-gray-600">
+          <WalletConnect />
+          <p>
             @{creator.username}
           </div>
           <WalletConnect />

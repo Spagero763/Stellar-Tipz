@@ -72,11 +72,17 @@ fn test_multi_user_tipping_round_robin() {
 
     // 1. Setup 5 users
     let mut users = Vec::new(&env);
+    let usernames = ["user_0", "user_1", "user_2", "user_3", "user_4"];
+    let display_names = ["User 0", "User 1", "User 2", "User 3", "User 4"];
     for i in 0..5 {
         let user = Address::generate(&env);
-        let username = format!("user_{}", i);
-        let display_name = format!("User {}", i);
-        register_creator(&env, &client, &user, &username, &display_name);
+        register_creator(
+            &env,
+            &client,
+            &user,
+            usernames[i as usize],
+            display_names[i as usize],
+        );
         token_admin_client.mint(&user, &10_000_000_000); // 1000 XLM each
         users.push_back(user);
     }
@@ -110,13 +116,18 @@ fn test_multi_user_tipping_round_robin() {
 fn test_withdrawal_drains_entire_balance() {
     let (env, client, _admin, fee_collector, token_address) = setup_env();
     let token_client = token::TokenClient::new(&env, &token_address);
-    
+
     let creator = Address::generate(&env);
     register_creator(&env, &client, &creator, "creator", "Creator");
-    
+
     let tipper = create_tipper(&env, &token_address, 1_000_000_000); // 100 XLM
     let tip_amount: i128 = 1_000_000_000;
-    client.send_tip(&tipper, &creator, &tip_amount, &String::from_str(&env, "Tip"));
+    client.send_tip(
+        &tipper,
+        &creator,
+        &tip_amount,
+        &String::from_str(&env, "Tip"),
+    );
 
     let profile_before = client.get_profile(&creator);
     assert_eq!(profile_before.balance, tip_amount);
@@ -136,10 +147,10 @@ fn test_withdrawal_drains_entire_balance() {
 #[test]
 fn test_rapid_tips_same_creator() {
     let (env, client, _admin, _fee_collector, token_address) = setup_env();
-    
+
     let creator = Address::generate(&env);
     register_creator(&env, &client, &creator, "creator", "Creator");
-    
+
     let tipper = create_tipper(&env, &token_address, 10_000_000_000); // 1000 XLM
     let tip_amount: i128 = 50_000_000; // 5 XLM
     let message = String::from_str(&env, "Rapid tip!");
@@ -155,12 +166,12 @@ fn test_rapid_tips_same_creator() {
 #[test]
 fn test_leaderboard_overtake() {
     let (env, client, _admin, _fee_collector, token_address) = setup_env();
-    
+
     let alice = Address::generate(&env);
     let bob = Address::generate(&env);
     register_creator(&env, &client, &alice, "alice", "Alice");
     register_creator(&env, &client, &bob, "bob", "Bob");
-    
+
     let tipper = create_tipper(&env, &token_address, 10_000_000_000); // 1000 XLM
     let message = String::from_str(&env, "Tip!");
 
@@ -186,7 +197,7 @@ fn test_leaderboard_overtake() {
 #[test]
 fn test_full_lifecycle() {
     let (env, client, admin, _fee_collector, token_address) = setup_env();
-    
+
     // 1. Register 3 users
     let alice = Address::generate(&env);
     let bob = Address::generate(&env);
@@ -197,7 +208,12 @@ fn test_full_lifecycle() {
 
     // 2. Perform tips
     let tipper = create_tipper(&env, &token_address, 10_000_000_000);
-    client.send_tip(&tipper, &alice, &1_000_000_000, &String::from_str(&env, "A"));
+    client.send_tip(
+        &tipper,
+        &alice,
+        &1_000_000_000,
+        &String::from_str(&env, "A"),
+    );
     client.send_tip(&tipper, &bob, &2_000_000_000, &String::from_str(&env, "B"));
 
     // 3. Update profiles
@@ -246,13 +262,18 @@ fn test_admin_rotation() {
 fn test_fee_change_mid_tip() {
     let (env, client, admin, fee_collector, token_address) = setup_env();
     let token_client = token::TokenClient::new(&env, &token_address);
-    
+
     let creator = Address::generate(&env);
     register_creator(&env, &client, &creator, "creator", "Creator");
-    
+
     let tipper = create_tipper(&env, &token_address, 1_000_000_000); // 100 XLM
     let tip_amount: i128 = 1_000_000_000;
-    client.send_tip(&tipper, &creator, &tip_amount, &String::from_str(&env, "Tip"));
+    client.send_tip(
+        &tipper,
+        &creator,
+        &tip_amount,
+        &String::from_str(&env, "Tip"),
+    );
 
     // Fee is 200 bps (2%)
     // Change fee to 500 bps (5%)
@@ -264,7 +285,7 @@ fn test_fee_change_mid_tip() {
     client.withdraw_tips(&creator, &tip_amount);
 
     let fee_collector_balance_after = token_client.balance(&fee_collector);
-    
+
     // Fee should be 5% of 100 XLM = 5 XLM
     assert_eq!(
         fee_collector_balance_after - fee_collector_balance_before,

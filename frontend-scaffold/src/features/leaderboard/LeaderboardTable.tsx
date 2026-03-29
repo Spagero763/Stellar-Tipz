@@ -1,49 +1,11 @@
-import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import React, { useMemo, useState } from "react";
 
-import AmountDisplay from "../../components/shared/AmountDisplay";
-import CreditBadge from "../../components/shared/CreditBadge";
-import Avatar from "../../components/ui/Avatar";
 import EmptyState from "../../components/ui/EmptyState";
 import Pagination from "../../components/ui/Pagination";
-import { LeaderboardEntry } from "../../types/contract";
+import type { LeaderboardEntry } from "../../types/contract";
+import LeaderboardRow from "./LeaderboardRow";
 
 const PAGE_SIZE = 20;
-
-// ---------------------------------------------------------------------------
-// LeaderboardRow
-// ---------------------------------------------------------------------------
-// Exported so it can be reused if a dedicated LeaderboardRow file lands later.
-export interface LeaderboardRowProps {
-  entry: LeaderboardEntry;
-  rank: number;
-}
-
-export const LeaderboardRow: React.FC<LeaderboardRowProps> = ({ entry, rank }) => (
-  <tr className="border-b-2 border-black bg-white transition-transform duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-    <td className="px-4 py-4 text-sm font-black tabular-nums">{rank}</td>
-    <td className="px-4 py-4">
-      <Link
-        to={`/@${entry.username}`}
-        className="flex items-center gap-3 hover:underline"
-      >
-        <Avatar
-          address={entry.address}
-          alt={entry.username}
-          fallback={entry.username}
-          size="md"
-        />
-        <span className="font-black uppercase">{entry.username}</span>
-      </Link>
-    </td>
-    <td className="px-4 py-4">
-      <AmountDisplay amount={entry.totalTipsReceived} className="text-sm" />
-    </td>
-    <td className="px-4 py-4">
-      <CreditBadge score={entry.creditScore} />
-    </td>
-  </tr>
-);
 
 // ---------------------------------------------------------------------------
 // LeaderboardTable

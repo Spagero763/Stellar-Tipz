@@ -32,7 +32,9 @@ mod test;
 use soroban_sdk::{contract, contractimpl, Address, BytesN, Env, String, Vec};
 
 use crate::errors::ContractError;
-use crate::types::{ContractStats, CreditBreakdown, CreditTier, LeaderboardEntry, Profile, Tip};
+use crate::types::{
+    ContractConfig, ContractStats, CreditBreakdown, CreditTier, LeaderboardEntry, Profile, Tip,
+};
 
 /// The current contract interface version, stored on-chain during initialization.
 /// Must be incremented manually in source when the contract interface changes.
@@ -322,6 +324,27 @@ impl TipzContract {
             total_tips_volume: storage::get_total_tips_volume(&env),
             total_fees_collected: storage::get_total_fees(&env),
             fee_bps: storage::get_fee_bps(&env),
+        })
+    }
+
+    /// Get full contract configuration (superset of get_stats).
+    /// Returns all admin-readable configuration in a single call,
+    /// reducing frontend RPC calls.
+    pub fn get_config(env: Env) -> Result<ContractConfig, ContractError> {
+        if !storage::is_initialized(&env) {
+            return Err(ContractError::NotInitialized);
+        }
+        Ok(ContractConfig {
+            admin: storage::get_admin(&env),
+            fee_collector: storage::get_fee_collector(&env),
+            fee_bps: storage::get_fee_bps(&env),
+            native_token: storage::get_native_token(&env),
+            total_creators: storage::get_total_creators(&env),
+            total_tips_count: storage::get_tip_count(&env),
+            total_tips_volume: storage::get_total_tips_volume(&env),
+            total_fees_collected: storage::get_total_fees(&env),
+            is_initialized: storage::is_initialized(&env),
+            version: storage::get_version(&env),
         })
     }
 

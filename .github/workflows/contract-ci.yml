@@ -4,11 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'contracts/**'
+      - "contracts/**"
   pull_request:
     branches: [main]
     paths:
-      - 'contracts/**'
+      - "contracts/**"
 
 permissions:
   contents: read
@@ -55,3 +55,6 @@ jobs:
 
       - name: Build Wasm (release)
         run: cargo build --target wasm32-unknown-unknown --release
+
+      - name: Check WASM binary size
+        run: make check-size

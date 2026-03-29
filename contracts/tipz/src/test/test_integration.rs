@@ -91,7 +91,7 @@ fn test_full_happy_path() {
     let tipper = create_tipper(&env, &token_address, 2_000_000_000); // 200 XLM
 
     let amount_alice: i128 = 800_000_000; // 80 XLM (below cap)
-    let amount_bob: i128 = 400_000_000;     // 40 XLM
+    let amount_bob: i128 = 400_000_000; // 40 XLM
     let amount_charlie: i128 = 200_000_000; // 20 XLM
 
     let message = String::from_str(&env, "Great work!");
@@ -120,11 +120,17 @@ fn test_full_happy_path() {
 
     assert_eq!(leaderboard.len(), 3);
     assert_eq!(leaderboard.get(0).unwrap().address, alice);
-    assert_eq!(leaderboard.get(0).unwrap().total_tips_received, amount_alice);
+    assert_eq!(
+        leaderboard.get(0).unwrap().total_tips_received,
+        amount_alice
+    );
     assert_eq!(leaderboard.get(1).unwrap().address, bob);
     assert_eq!(leaderboard.get(1).unwrap().total_tips_received, amount_bob);
     assert_eq!(leaderboard.get(2).unwrap().address, charlie);
-    assert_eq!(leaderboard.get(2).unwrap().total_tips_received, amount_charlie);
+    assert_eq!(
+        leaderboard.get(2).unwrap().total_tips_received,
+        amount_charlie
+    );
 
     // ──────────────────────────────────────────────────────────────────────────
     // Step 5: Verify credit scores: alice > bob > charlie
@@ -157,7 +163,7 @@ fn test_full_happy_path() {
     let fee_collector_balance_after = token_client.balance(&fee_collector);
 
     let expected_alice_receive: i128 = 390_000_000; // 39 XLM
-    let expected_fee: i128 = 10_000_000;            // 1 XLM
+    let expected_fee: i128 = 10_000_000; // 1 XLM
 
     assert_eq!(alice_balance_after, expected_alice_receive);
     assert_eq!(
