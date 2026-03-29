@@ -229,12 +229,14 @@ export const useContract = () => {
     );
 
     // Helper function to convert optional string to ScVal
-    // Returns ScVal.scvOption(Some(value)) if value is provided, else ScVal.scvVoid() for None
+    // Returns an Option with Some(value) if value is provided, else None
     const optionalStringToScVal = (value?: string): xdr.ScVal => {
       if (value !== undefined && value !== "") {
-        return xdr.ScVal.scvOption(nativeToScVal(value));
+        return xdr.ScVal.scvOption(
+          xdr.SCOption.scOptionSome(nativeToScVal(value))
+        );
       }
-      return xdr.ScVal.scvVoid();
+      return xdr.ScVal.scvOption(xdr.SCOption.scOptionNone());
     };
 
     const tx = txBuilder
