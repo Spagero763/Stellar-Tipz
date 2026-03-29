@@ -136,18 +136,6 @@
                         "key": {
                           "vec": [
                             {
-                              "symbol": "ContractVersion"
-                            }
-                          ]
-                        },
-                        "val": {
-                          "u32": 1
-                        }
-                      },
-                      {
-                        "key": {
-                          "vec": [
-                            {
                               "symbol": "FeeCollector"
                             }
                           ]
@@ -723,7 +711,7 @@
                     "symbol": "version"
                   },
                   "val": {
-                    "u32": 1
+                    "u32": 0
                   }
                 }
               ]

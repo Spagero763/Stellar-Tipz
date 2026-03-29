@@ -2,7 +2,11 @@
 
 #![cfg(test)]
 
-use soroban_sdk::{symbol_short, testutils::{Address as _, Events}, Address, Env, String};
+use soroban_sdk::{
+    symbol_short,
+    testutils::{Address as _, Events},
+    Address, Env, String,
+};
 
 use crate::errors::ContractError;
 use crate::storage;
@@ -43,11 +47,7 @@ fn setup() -> (Env, TipzContractClient<'static>, Address) {
 }
 
 /// Register a profile with default values and zero balance.
-fn register_default_profile(
-    env: &Env,
-    client: &TipzContractClient,
-    caller: &Address,
-) -> Profile {
+fn register_default_profile(env: &Env, client: &TipzContractClient, caller: &Address) -> Profile {
     client.register_profile(
         caller,
         &String::from_str(env, "alice"),
@@ -74,9 +74,8 @@ fn test_deregister_profile_success() {
     });
 
     // Get initial total creators count
-    let initial_total_creators = env.as_contract(&contract_id, || {
-        storage::get_total_creators(&env)
-    });
+    let initial_total_creators =
+        env.as_contract(&contract_id, || storage::get_total_creators(&env));
 
     // Deregister the profile
     client.deregister_profile(&caller);
@@ -93,9 +92,7 @@ fn test_deregister_profile_success() {
     });
 
     // Verify TotalCreators decremented by one
-    let final_total_creators = env.as_contract(&contract_id, || {
-        storage::get_total_creators(&env)
-    });
+    let final_total_creators = env.as_contract(&contract_id, || storage::get_total_creators(&env));
     assert_eq!(final_total_creators, initial_total_creators - 1);
 }
 
@@ -160,7 +157,7 @@ fn test_deregister_profile_emits_event() {
     assert_topic!(topics.get(1).unwrap(), symbol_short!("deregist"));
 
     // Check event data contains correct address and username
-    let (event_address, event_username): (Address, String) = 
+    let (event_address, event_username): (Address, String) =
         soroban_sdk::FromVal::from_val(&env, &data);
     assert_eq!(event_address, caller);
     assert_eq!(event_username, String::from_str(&env, "alice"));
@@ -200,7 +197,7 @@ fn test_deregister_profile_removes_from_leaderboard() {
         profile.total_tips_received = 1_000_000_000; // 100 XLM
         profile.balance = 0; // Keep balance at zero for deregistration
         storage::set_profile(&env, &profile);
-        
+
         // Manually add to leaderboard
         crate::leaderboard::update_leaderboard(&env, &profile);
     });
@@ -262,9 +259,7 @@ fn test_decrement_total_creators_underflow_protection() {
     let (env, _client, contract_id) = setup();
 
     // Verify counter starts at zero (no profiles registered)
-    let count_before = env.as_contract(&contract_id, || {
-        storage::get_total_creators(&env)
-    });
+    let count_before = env.as_contract(&contract_id, || storage::get_total_creators(&env));
     assert_eq!(count_before, 0);
 
     // Call decrement_total_creators when counter is already zero
@@ -273,8 +268,6 @@ fn test_decrement_total_creators_underflow_protection() {
     });
 
     // Verify counter remains at zero (no underflow)
-    let count_after = env.as_contract(&contract_id, || {
-        storage::get_total_creators(&env)
-    });
+    let count_after = env.as_contract(&contract_id, || storage::get_total_creators(&env));
     assert_eq!(count_after, 0);
 }

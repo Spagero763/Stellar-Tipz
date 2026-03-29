@@ -277,7 +277,8 @@ pub fn upgrade(
 ) -> Result<(), ContractError> {
     storage::extend_instance_ttl(env);
     require_admin(env, caller)?;
-    env.deployer().update_current_contract_wasm(new_wasm_hash.clone());
+    env.deployer()
+        .update_current_contract_wasm(new_wasm_hash.clone());
     let new_version = storage::get_version(env) + 1;
     storage::set_version(env, new_version);
     Ok(())

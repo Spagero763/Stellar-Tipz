@@ -813,7 +813,7 @@ mod tests {
             // Set profile
             set_profile(&env, &profile);
             assert!(has_profile(&env, &owner));
-            
+
             // Remove profile
             remove_profile(&env, &owner);
             assert!(!has_profile(&env, &owner));
