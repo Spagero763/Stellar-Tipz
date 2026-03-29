@@ -1,8 +1,6 @@
-import React from "react";
 import React, { useMemo, useState } from "react";
 import { Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Trophy } from "lucide-react";
 
 import PageContainer from "@/components/layout/PageContainer";
 import AmountDisplay from "@/components/shared/AmountDisplay";
@@ -13,6 +11,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import type { LeaderboardEntry } from "@/types";
 import { mockLeaderboard } from "../mockData";
 import Podium from "./Podium";
+import LeaderboardTable from "./LeaderboardTable";
 
 const PodiumCard: React.FC<{
   entry: LeaderboardEntry;
@@ -32,9 +31,8 @@ const PodiumCard: React.FC<{
   return (
     <Card
       padding="lg"
-      className={`flex flex-col justify-between ${heights[place]} ${
-        place === 1 ? "relative z-10 ring-2 ring-black md:scale-[1.02]" : ""
-      }`}
+      className={`flex flex-col justify-between ${heights[place]} ${place === 1 ? "relative z-10 ring-2 ring-black md:scale-[1.02]" : ""
+        }`}
     >
       <div className="flex items-start justify-between gap-2">
         <span className="text-4xl font-black leading-none">{labels[place]}</span>
@@ -110,82 +108,15 @@ const LeaderboardPage: React.FC = () => {
             </div>
           )}
         </div>
-        </Card>
-
-        <Podium creators={mockLeaderboard.slice(0, 3)} />
       </section>
+
+
+      <Podium creators={mockLeaderboard.slice(0, 3)} />
 
       <section aria-label="Additional leaderboard rankings">
         <h2 className="mb-4 text-2xl font-black uppercase">More creators</h2>
-        {rest.length === 0 ? (
-          <p className="text-sm font-bold text-gray-600">No additional entries yet.</p>
-        ) : (
-          <div
-            className="overflow-x-auto border-3 border-black bg-white"
-            style={{ boxShadow: "4px 4px 0px 0px rgba(0,0,0,1)" }}
-          >
-            <table className="w-full min-w-[560px] border-collapse text-left">
-              <thead>
-                <tr className="border-b-3 border-black bg-off-white">
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-xs font-black uppercase tracking-[0.15em]"
-                  >
-                    Rank
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-xs font-black uppercase tracking-[0.15em]"
-                  >
-                    Creator
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-right text-xs font-black uppercase tracking-[0.15em]"
-                  >
-                    Tips received
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3 text-xs font-black uppercase tracking-[0.15em]"
-                  >
-                    Credit
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {rest.map((row, index) => {
-                  const rank = index + 4;
-                  return (
-                    <tr key={row.address} className="border-b-2 border-black last:border-b-0">
-                      <td className="px-4 py-4 font-black tabular-nums">{rank}</td>
-                      <td className="px-4 py-4">
-                        <Link
-                          to={`/@${row.username}`}
-                          className="flex items-center gap-3 font-black uppercase hover:underline"
-                        >
-                          <Avatar
-                            address={row.address}
-                            alt={row.username}
-                            fallback={row.username}
-                            size="md"
-                          />
-                          <span>{row.username}</span>
-                        </Link>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <AmountDisplay amount={row.totalTipsReceived} className="text-sm" />
-                      </td>
-                      <td className="px-4 py-4">
-                        <CreditBadge score={row.creditScore} />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+
+        <LeaderboardTable entries={rest} />
       </section>
     </PageContainer>
   );

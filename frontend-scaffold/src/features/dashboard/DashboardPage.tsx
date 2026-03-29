@@ -1,10 +1,9 @@
 import React from 'react';
-import { ArrowUpRight, Coins, LayoutDashboard, Wallet, QrCode } from 'lucide-react';
-import { Navigate, Link } from 'react-router-dom';
+import { ArrowUpRight, Coins, LayoutDashboard, Wallet, QrCode, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 import PageContainer from "../../components/layout/PageContainer";
 import WalletConnect from "../../components/shared/WalletConnect";
-import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";
 import Pagination from "../../components/ui/Pagination";
@@ -16,6 +15,7 @@ import OverviewTab from "./OverviewTab";
 import TipsTab from "./TipsTab";
 import { useWalletStore } from "../../store/walletStore";
 import { useDashboard, usePageTitle } from "../../hooks";
+import { AmountDisplay, CreditBadge, Tabs, TipCard } from '@/components';
 
 const EarningsTab: React.FC<{ profile: any; stats: any; loading: boolean }> = () => (
   <div className="pt-6">
@@ -63,7 +63,7 @@ const DashboardPage: React.FC = () => {
     );
   }
 
-  const creator = profile || mockProfile;
+
   const displayTips = tips && tips.length > 0 ? tips : mockTips;
   const totalPages = Math.ceil(displayTips.length / 10) || 1;
   if (!loading && !profile) {
@@ -168,7 +168,7 @@ const DashboardPage: React.FC = () => {
             <LayoutDashboard size={32} />
             Dashboard
           </h1>
-          {profile.displayName ? (
+          {profile?.displayName ? (
             <p className="mt-2 text-sm font-bold text-gray-600">
               {profile.displayName}
             </p>
@@ -178,10 +178,11 @@ const DashboardPage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-             <Link to="/profile">
-                <Button variant="outline" size="sm">View Public Profile</Button>
-             </Link>
-             <WalletConnect />
+          <Link to="/profile">
+            <Button variant="outline" size="sm">View Public Profile</Button>
+          </Link>
+          <WalletConnect />
+          <p>
             @{creator.username}
           </p>
         </div>
@@ -222,23 +223,23 @@ const DashboardPage: React.FC = () => {
               </Link>
             </div>
 
-          {displayTips.length === 0 ? (
-            <EmptyState
-              icon={<Coins />}
-              title="No earnings yet"
-              description="Once tips start landing, your payout history will show up here."
-            />
-          ) : (
-            <div className="space-y-4">
-              {displayTips.slice(0, 3).map((tip) => (
-                <TipCard key={`${tip.from}-${tip.timestamp}`} tip={tip} showReceiver={false} />
-              ))}
-            </div>
-          )}
+            {displayTips.length === 0 ? (
+              <EmptyState
+                icon={<Coins />}
+                title="No earnings yet"
+                description="Once tips start landing, your payout history will show up here."
+              />
+            ) : (
+              <div className="space-y-4">
+                {displayTips.slice(0, 3).map((tip) => (
+                  <TipCard key={`${tip.from}-${tip.timestamp}`} tip={tip} showReceiver={false} />
+                ))}
+              </div>
+            )}
 
-          <Pagination currentPage={1} totalPages={Math.ceil(mockTips.length / 3)} onPageChange={() => {}} />
-        </Card>
-      </div>
+            <Pagination currentPage={1} totalPages={Math.ceil(mockTips.length / 3)} onPageChange={() => { }} />
+          </Card>
+        </div>
 
         <div className="space-y-6">
           <Card className="space-y-4" padding="lg">
@@ -271,11 +272,11 @@ const DashboardPage: React.FC = () => {
               </div>
             </div>
           </Card>
-          
+
           <Card padding="lg">
             <div className="flex items-center gap-2 mb-4">
-                <QrCode size={20} />
-                <h2 className="text-xl font-black uppercase">QR Code</h2>
+              <QrCode size={20} />
+              <h2 className="text-xl font-black uppercase">QR Code</h2>
             </div>
             <QRCode url={`https://tipz.app/@${creator.username}`} />
           </Card>
