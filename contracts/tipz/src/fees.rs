@@ -13,19 +13,22 @@ use crate::errors::ContractError;
 /// - `fee_bps` – fee in basis points (100 bps = 1 %; max 1 000 bps = 10 %)
 ///
 /// # Returns
-/// `Ok((fee, net))` where `fee + net == amount`.
+/// `Ok((fee, net))` where `fee + net == amount` (except when fee rounds up to 1 stroop).
 ///
 /// # Rounding policy
-/// Integer division truncates toward zero (floor for positive values), so the
-/// fee is rounded **down** and any remainder stays with the creator.  If the
-/// computed fee would be 0 (i.e. `amount < 10_000 / fee_bps`), the function
-/// returns `(0, amount)` — the creator keeps the full amount.
+/// Integer division truncates toward zero (floor for positive values). To prevent
+/// fee circumvention through dust withdrawals, when `fee_bps > 0`, the fee is
+/// guaranteed to be at least 1 stroop, even if the computed value rounds to 0.
+/// Any remainder goes to the protocol instead of the creator.
+///
+/// # Example
+/// For `amount = 49` stroops at `fee_bps = 200` (2%):
+/// - Naive calculation: `(49 * 200) / 10_000 = 0` ← vulnerability
+/// - With minimum 1 stroop: `fee = 1`, `net = 48` ← fixed
 ///
 /// # Errors
 /// Returns [`ContractError::OverflowError`] if `amount * fee_bps` overflows
 /// `i128`.
-// `withdraw_tips` (issue #10) will call this once implemented.
-#[allow(dead_code)]
 pub fn calculate_fee(amount: i128, fee_bps: u32) -> Result<(i128, i128), ContractError> {
     if fee_bps == 0 {
         return Ok((0, amount));
@@ -37,7 +40,9 @@ pub fn calculate_fee(amount: i128, fee_bps: u32) -> Result<(i128, i128), Contrac
         .ok_or(ContractError::OverflowError)?;
 
     // Integer division truncates → fee rounds down.
-    let fee = fee_numerator / 10_000_i128;
+    // However, ensure fee is at least 1 stroop when fee_bps > 0 to prevent
+    // circumventing the fee system with tiny withdrawals (issue #334).
+    let fee = (fee_numerator / 10_000_i128).max(1);
 
     // net = amount - fee keeps the invariant fee + net == amount exactly.
     let net = amount
