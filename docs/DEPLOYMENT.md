@@ -64,8 +64,11 @@ soroban contract invoke \
   initialize \
   --admin $DEPLOYER_ADDR \
   --fee_collector $DEPLOYER_ADDR \
-  --fee_bps 200
+  --fee_bps 200 \
+  --native_token <XLM_SAC_ADDRESS>
 ```
+
+> **Note:** Replace `<XLM_SAC_ADDRESS>` with the Stellar Asset Contract address for native XLM on your target network. For testnet, you can obtain this from the Stellar laboratory or by wrapping native XLM.
 
 ### Verify Deployment
 
