@@ -98,10 +98,11 @@ mod tests {
 
     #[test]
     fn fee_rounds_to_zero_for_tiny_amount() {
-        // 200 bps of 49 stroops = 0.98 → truncates to 0
+        // 200 bps of 49 stroops = 0.98, but non-zero fees floor to 1 stroop.
         let (fee, net) = calculate_fee(49, 200).unwrap();
-        assert_eq!(fee, 0);
-        assert_eq!(net, 49);
+        assert_eq!(fee, 1);
+        assert_eq!(net, 48);
+        assert_eq!(fee + net, 49);
     }
 
     #[test]

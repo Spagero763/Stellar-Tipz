@@ -19,7 +19,7 @@ struct TestCtx<'a> {
     env: Env,
     client: TipzContractClient<'a>,
     admin: Address,
-    fee_collector: Address,
+    _fee_collector: Address,
     contract_id: Address,
 }
 
@@ -44,7 +44,7 @@ fn setup() -> TestCtx<'static> {
         env,
         client,
         admin,
-        fee_collector,
+        _fee_collector: fee_collector,
         contract_id,
     }
 }

@@ -19,7 +19,7 @@ use crate::CONTRACT_VERSION;
 struct TestCtx<'a> {
     env: Env,
     client: TipzContractClient<'a>,
-    admin: Address,
+    _admin: Address,
 }
 
 fn setup() -> TestCtx<'static> {
@@ -37,7 +37,11 @@ fn setup() -> TestCtx<'static> {
 
     client.initialize(&admin, &fee_collector, &200_u32, &native_token);
 
-    TestCtx { env, client, admin }
+    TestCtx {
+        env,
+        client,
+        _admin: admin,
+    }
 }
 
 // ── get_version ──────────────────────────────────────────────────────────────
