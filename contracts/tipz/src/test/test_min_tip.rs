@@ -1,6 +1,9 @@
 #![cfg(test)]
 
-use soroban_sdk::{testutils::{Address as _, Events}, token, Address, Env, String};
+use soroban_sdk::{
+    testutils::{Address as _, Events},
+    token, Address, Env, String,
+};
 
 use crate::errors::ContractError;
 use crate::TipzContract;
@@ -121,8 +124,7 @@ fn test_set_min_tip_emits_event_with_old_and_new() {
     assert_topic!(topics.get(0).unwrap(), soroban_sdk::symbol_short!("tip"));
     assert_topic!(topics.get(1).unwrap(), soroban_sdk::symbol_short!("min"));
 
-    let (emitted_old, emitted_new): (i128, i128) =
-        soroban_sdk::FromVal::from_val(&env, &data);
+    let (emitted_old, emitted_new): (i128, i128) = soroban_sdk::FromVal::from_val(&env, &data);
     assert_eq!(emitted_old, old_min, "old_min in event mismatch");
     assert_eq!(emitted_new, new_min, "new_min in event mismatch");
 }
@@ -143,8 +145,7 @@ fn test_set_min_tip_event_old_value_tracks_previous_update() {
     assert_topic!(topics.get(0).unwrap(), soroban_sdk::symbol_short!("tip"));
     assert_topic!(topics.get(1).unwrap(), soroban_sdk::symbol_short!("min"));
 
-    let (emitted_old, emitted_new): (i128, i128) =
-        soroban_sdk::FromVal::from_val(&env, &data);
+    let (emitted_old, emitted_new): (i128, i128) = soroban_sdk::FromVal::from_val(&env, &data);
     assert_eq!(emitted_old, 2_000_000_i128, "old value should be 2_000_000");
     assert_eq!(emitted_new, 5_000_000_i128, "new value should be 5_000_000");
 }
