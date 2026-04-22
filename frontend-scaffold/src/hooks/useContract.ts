@@ -66,6 +66,11 @@ export const useContract = () => {
   const server = useMemo(() => getServer(networkDetails), [networkDetails]);
   const contractId = env.contractId;
 
+  // Warn once in development when contract ID is not configured
+  if (!contractId) {
+    console.warn("[useContract] VITE_CONTRACT_ID is not set — contract calls will be skipped.");
+  }
+
   // --- Read-only Methods ---
 
   const getProfile = useCallback(
@@ -135,6 +140,9 @@ export const useContract = () => {
   );
 
   const getStats = useCallback(async (): Promise<ContractStats> => {
+    if (!contractId) {
+      throw new Error("Contract ID is not configured");
+    }
     const contract = new Contract(contractId);
     const txBuilder = await getTxBuilder(
       wallet.publicKey ||

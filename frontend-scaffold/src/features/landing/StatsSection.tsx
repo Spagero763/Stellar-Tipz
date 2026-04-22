@@ -14,6 +14,15 @@ const FALLBACK_STATS = {
   speedup: '10,000×',
 };
 
+// Demo stats shown when VITE_USE_MOCK_DATA=true or contract is unavailable
+const MOCK_STATS: ContractStats = {
+  totalCreators: 1234,
+  totalTipsCount: 8765,
+  totalTipsVolume: '0',
+  totalFeesCollected: '0',
+  feeBps: 200, // 2%
+};
+
 const comparisonRows = [
   { feature: 'Fees', traditional: '30–50%', tipz: '2%', highlight: true },
   { feature: 'Settlement', traditional: '7–30 days', tipz: '3-5 seconds', highlight: true },
@@ -22,11 +31,17 @@ const comparisonRows = [
 ];
 
 const StatsSection: React.FC = () => {
-  const [stats, setStats] = useState<ContractStats | null>(null);
+  const [stats, setStats] = useState<ContractStats | null>(
+    env.useMockData ? MOCK_STATS : null,
+  );
   const { getStats } = useContract();
 
   useEffect(() => {
+    // Skip contract call when ID is not configured — show mock data if enabled
     if (!env.contractId) {
+      if (env.useMockData) {
+        setStats(MOCK_STATS);
+      }
       return;
     }
 
@@ -34,11 +49,11 @@ const StatsSection: React.FC = () => {
       .then(setStats)
       .catch((err) => {
         // Contract may not be deployed yet — render gracefully with fallback
-        console.error('Failed to fetch stats:', err);
+        console.warn('[StatsSection] Could not fetch live platform stats:', err);
         const { addToast } = useToastStore.getState();
-        addToast({ 
-          message: categorizeError(err) === 'network' ? ERRORS.NETWORK : 'Could not fetch live platform stats.', 
-          type: 'error' 
+        addToast({
+          message: categorizeError(err) === 'network' ? ERRORS.NETWORK : 'Could not fetch live platform stats.',
+          type: 'error',
         });
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -56,28 +71,32 @@ const StatsSection: React.FC = () => {
           TIPZ VS TRADITIONAL
         </motion.h2>
 
-        {/* Live stats if contract is deployed */}
-        {stats && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
-          >
-            <div className="card-brutalist text-center">
-              <div className="text-4xl font-black mb-1">{stats.totalCreators.toLocaleString()}</div>
-              <div className="text-sm uppercase font-bold tracking-wide">Creators</div>
+        {/* Live or mock stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12"
+        >
+          <div className="card-brutalist text-center">
+            <div className="text-4xl font-black mb-1">
+              {stats ? stats.totalCreators.toLocaleString() : '—'}
             </div>
-            <div className="card-brutalist text-center">
-              <div className="text-4xl font-black mb-1">{stats.totalTipsCount.toLocaleString()}</div>
-              <div className="text-sm uppercase font-bold tracking-wide">Tips Sent</div>
+            <div className="text-sm uppercase font-bold tracking-wide">Creators</div>
+          </div>
+          <div className="card-brutalist text-center">
+            <div className="text-4xl font-black mb-1">
+              {stats ? stats.totalTipsCount.toLocaleString() : '—'}
             </div>
-            <div className="card-brutalist text-center">
-              <div className="text-4xl font-black mb-1">{stats.feeBps / 100}%</div>
-              <div className="text-sm uppercase font-bold tracking-wide">Platform Fee</div>
+            <div className="text-sm uppercase font-bold tracking-wide">Tips Sent</div>
+          </div>
+          <div className="card-brutalist text-center">
+            <div className="text-4xl font-black mb-1">
+              {stats ? `${stats.feeBps / 100}%` : '—'}
             </div>
-          </motion.div>
-        )}
+            <div className="text-sm uppercase font-bold tracking-wide">Platform Fee</div>
+          </div>
+        </motion.div>
 
         {/* Comparison table */}
         <div className="card-brutalist overflow-x-auto mb-8">
