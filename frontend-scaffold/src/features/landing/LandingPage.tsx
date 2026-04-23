@@ -5,6 +5,7 @@ import FeaturesSection from "./FeaturesSection";
 import HowItWorksSection from "./HowItWorksSection";
 import StatsSection from "./StatsSection";
 import TopCreatorsSection from "./TopCreatorsSection";
+import TrendingCreatorsSection from "./TrendingCreatorsSection";
 import CTASection from "./CTASection";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useI18n } from "@/i18n";
@@ -36,6 +37,10 @@ const LandingPage: React.FC = () => {
       <Divider />
       <ErrorBoundary>
         <TopCreatorsSection />
+      </ErrorBoundary>
+      <Divider />
+      <ErrorBoundary>
+        <TrendingCreatorsSection />
       </ErrorBoundary>
       <Divider />
       <CTASection />

@@ -6,6 +6,7 @@ import Footer from "@/components/layout/Footer";
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import ToastContainer from "@/components/shared/ToastContainer";
+import KeyboardShortcutsProvider from "@/components/shared/KeyboardShortcutsProvider";
 import { routes } from "@/routes";
 import { useI18n } from "@/i18n";
 
@@ -16,6 +17,7 @@ const AppRoutes: React.FC = () => {
   return (
     <>
       <ScrollToTop />
+      <KeyboardShortcutsProvider />
       <ErrorBoundary>
         <div className="min-h-screen flex flex-col bg-white dark:bg-black">
           <a

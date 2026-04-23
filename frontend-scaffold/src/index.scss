@@ -30,53 +30,64 @@
   }
 }
 
+@layer utilities {
+  /* Hide scrollbar while keeping scroll functionality */
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @layer components {
   .btn-brutalist {
     @apply px-6 py-3 bg-black text-white border-2 border-black font-bold uppercase tracking-wide;
     @apply hover:-translate-x-1 hover:-translate-y-1 transition-transform duration-200;
-    box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
   }
-  
+
   .btn-brutalist:hover {
-    box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+    box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
   }
 
   .btn-brutalist-outline {
     @apply px-6 py-3 bg-white text-black border-2 border-black font-bold uppercase tracking-wide;
     @apply hover:-translate-x-1 hover:-translate-y-1 transition-transform duration-200;
-    box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
   }
-  
+
   .btn-brutalist-outline:hover {
-    box-shadow: 6px 6px 0px 0px rgba(0,0,0,1);
+    box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
   }
 
   .card-brutalist {
     @apply bg-white border-3 border-black p-6;
-    box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
   }
 
   /* Dark mode variants */
   .dark .btn-brutalist {
     @apply bg-white text-black border-white;
-    box-shadow: 4px 4px 0px 0px rgba(255,255,255,1);
+    box-shadow: 4px 4px 0px 0px rgba(255, 255, 255, 1);
   }
-  
+
   .dark .btn-brutalist:hover {
-    box-shadow: 6px 6px 0px 0px rgba(255,255,255,1);
+    box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 1);
   }
 
   .dark .btn-brutalist-outline {
     @apply bg-black text-white border-white;
-    box-shadow: 4px 4px 0px 0px rgba(255,255,255,1);
+    box-shadow: 4px 4px 0px 0px rgba(255, 255, 255, 1);
   }
-  
+
   .dark .btn-brutalist-outline:hover {
-    box-shadow: 6px 6px 0px 0px rgba(255,255,255,1);
+    box-shadow: 6px 6px 0px 0px rgba(255, 255, 255, 1);
   }
 
   .dark .card-brutalist {
     @apply bg-black border-white;
-    box-shadow: 4px 4px 0px 0px rgba(255,255,255,1);
+    box-shadow: 4px 4px 0px 0px rgba(255, 255, 255, 1);
   }
 }

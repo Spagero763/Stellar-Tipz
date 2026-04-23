@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Github, Menu, Moon, Sun, X } from "lucide-react";
+import { Github, Keyboard, Menu, Moon, Sun, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { useTheme } from "@/hooks/useTheme";
@@ -9,6 +9,7 @@ import { useI18n } from "@/i18n";
 
 import NetworkBadge from "../shared/NetworkBadge";
 import Button from "../ui/Button";
+import { getModifierKey } from "../../hooks/useKeyboardShortcuts";
 
 const UNSEEN_TIPS_KEY = "tipz_unseen_tips";
 
@@ -85,6 +86,17 @@ const Header: React.FC = () => {
       ? "4px 4px 0px 0px rgba(255,255,255,1)"
       : "4px 4px 0px 0px rgba(0,0,0,1)";
 
+  const openKeyboardShortcuts = () => {
+    window.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "/",
+        ctrlKey: true,
+        metaKey: true,
+        bubbles: true,
+      }),
+    );
+  };
+
   return (
     <header
       ref={headerRef}
@@ -114,6 +126,12 @@ const Header: React.FC = () => {
             {navDashboard}
           </Link>
           <Link
+            to="/transactions"
+            className="text-sm font-bold uppercase tracking-wide hover:underline"
+          >
+            Transactions
+          </Link>
+          <Link
             to="/profile"
             className="text-sm font-bold uppercase tracking-wide hover:underline"
           >
@@ -132,6 +150,16 @@ const Header: React.FC = () => {
             } mode`}
           >
             {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
+          <button
+            type="button"
+            title={`Keyboard shortcuts (${getModifierKey()} + /)`}
+            aria-label="Show keyboard shortcuts"
+            className="inline-flex items-center justify-center border-2 border-black bg-white p-2 transition-opacity hover:opacity-60 dark:border-white dark:bg-black"
+            style={{ boxShadow: shadow }}
+            onClick={openKeyboardShortcuts}
+          >
+            <Keyboard size={20} />
           </button>
           <a
             href="https://github.com/Akanimoh12/stellar-tipz"
@@ -207,6 +235,13 @@ const Header: React.FC = () => {
                 {navDashboard}
               </Link>
               <Link
+                to="/transactions"
+                onClick={closeMobileMenu}
+                className="border-2 border-black bg-white px-4 py-3 font-bold uppercase tracking-wide dark:border-white dark:bg-black dark:text-white"
+              >
+                Transactions
+              </Link>
+              <Link
                 to="/profile"
                 onClick={closeMobileMenu}
                 className="border-2 border-black bg-white px-4 py-3 font-bold uppercase tracking-wide dark:border-white dark:bg-black dark:text-white"
@@ -237,6 +272,14 @@ const Header: React.FC = () => {
                   </span>
                   <NetworkBadge />
                 </div>
+                <button
+                  type="button"
+                  onClick={openKeyboardShortcuts}
+                  className="flex items-center justify-between border-2 border-black bg-white px-3 py-2 text-xs font-bold uppercase dark:border-white dark:bg-black dark:text-white"
+                >
+                  Keyboard shortcuts
+                  <Keyboard size={16} />
+                </button>
                 <Button className="w-full" onClick={handleWalletAction}>
                   {connected
                     ? `Disconnect ${walletLabel}`
