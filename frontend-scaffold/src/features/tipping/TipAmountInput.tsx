@@ -4,7 +4,11 @@ import React, { useEffect, useState } from "react";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { env } from "../../helpers/env";
-import { stroopToXlm, xlmToStroop, formatXlmDisplay } from "../../helpers/format";
+import {
+  stroopToXlm,
+  xlmToStroop,
+  formatXlmDisplay,
+} from "../../helpers/format";
 import { useWallet, useContract, useBalance } from "../../hooks";
 import { BASE_FEE } from "../../services";
 import FeeBreakdown from "./FeeBreakdown";
@@ -19,7 +23,10 @@ const QUICK_AMOUNTS = ["1", "5", "10", "25", "50"];
 const DEFAULT_MIN_TIP_XLM = "0.1"; // 1,000,000 stroops
 const ESTIMATED_NETWORK_FEE_XLM = new BigNumber(stroopToXlm(BASE_FEE, 5));
 
-const TipAmountInput: React.FC<TipAmountInputProps> = ({ amount, onChange }) => {
+const TipAmountInput: React.FC<TipAmountInputProps> = ({
+  amount,
+  onChange,
+}) => {
   const { connected, publicKey } = useWallet();
   const { getMinTipAmount } = useContract();
   const [useCustom, setUseCustom] = useState(!QUICK_AMOUNTS.includes(amount));
@@ -59,14 +66,18 @@ const TipAmountInput: React.FC<TipAmountInputProps> = ({ amount, onChange }) => 
   const amountBigNumber = Number.isNaN(numericAmount)
     ? new BigNumber(0)
     : new BigNumber(amount || "0");
-  const amountInStroops = Number.isNaN(numericAmount) || numericAmount <= 0
-    ? null
-    : xlmToStroop(amount);
+  const amountInStroops =
+    Number.isNaN(numericAmount) || numericAmount <= 0
+      ? null
+      : xlmToStroop(amount);
   const platformFeeXlm = amountBigNumber.multipliedBy(0.02);
-  const totalCost = amountBigNumber.plus(platformFeeXlm).plus(ESTIMATED_NETWORK_FEE_XLM);
-  const balanceBigNumber = !effectiveBalance || Number.isNaN(numericBalance)
-    ? null
-    : new BigNumber(effectiveBalance);
+  const totalCost = amountBigNumber
+    .plus(platformFeeXlm)
+    .plus(ESTIMATED_NETWORK_FEE_XLM);
+  const balanceBigNumber =
+    !effectiveBalance || Number.isNaN(numericBalance)
+      ? null
+      : new BigNumber(effectiveBalance);
 
   let amountError: string | undefined;
 
@@ -92,10 +103,14 @@ const TipAmountInput: React.FC<TipAmountInputProps> = ({ amount, onChange }) => 
 
   return (
     <div className="space-y-4">
-      <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-600">Tip amount</p>
+      <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-600">
+        Tip amount
+      </p>
 
       <div className="rounded-md border-2 border-black bg-yellow-100 p-5 text-center">
-        <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-600">Selected amount</p>
+        <p className="text-xs font-black uppercase tracking-[0.2em] text-gray-600">
+          Selected amount
+        </p>
         <p className="mt-2 text-4xl font-black">
           {amount || "0"} <span className="text-2xl">XLM</span>
         </p>
@@ -121,6 +136,7 @@ const TipAmountInput: React.FC<TipAmountInputProps> = ({ amount, onChange }) => 
           type="button"
           variant={useCustom ? "primary" : "outline"}
           size="sm"
+          data-tip-amount-trigger="true"
           onClick={() => {
             setUseCustom(true);
             if (QUICK_AMOUNTS.includes(amount)) {
@@ -141,6 +157,7 @@ const TipAmountInput: React.FC<TipAmountInputProps> = ({ amount, onChange }) => 
           value={amount}
           onChange={(event) => onChange(event.target.value)}
           error={amountError}
+          data-tip-amount="true"
         />
       )}
 
@@ -161,7 +178,10 @@ const TipAmountInput: React.FC<TipAmountInputProps> = ({ amount, onChange }) => 
       <p className="text-sm font-bold text-gray-600">
         Your balance:{" "}
         {loading ? (
-          <span className="inline-block align-middle ml-2" data-testid="balance-skeleton">
+          <span
+            className="inline-block align-middle ml-2"
+            data-testid="balance-skeleton"
+          >
             <Skeleton className="h-4 w-16" />
           </span>
         ) : effectiveBalance ? (

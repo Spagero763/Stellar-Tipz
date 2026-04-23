@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Github, Menu, X, Sun, Moon } from "lucide-react";
+import { Github, Menu, X, Sun, Moon, Keyboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import Button from "../ui/Button";
 import { useWallet } from "../../hooks/useWallet";
 import { useTheme } from "../../hooks/useTheme";
 import NetworkBadge from "../shared/NetworkBadge";
+import { getModifierKey } from "../../hooks/useKeyboardShortcuts";
 
 const Header: React.FC = () => {
   const { connected, publicKey, connect, disconnect } = useWallet();
@@ -76,6 +77,12 @@ const Header: React.FC = () => {
             Dashboard
           </Link>
           <Link
+            to="/transactions"
+            className="font-bold uppercase text-sm tracking-wide hover:underline"
+          >
+            Transactions
+          </Link>
+          <Link
             to="/profile"
             className="font-bold uppercase text-sm tracking-wide hover:underline"
           >
@@ -89,14 +96,41 @@ const Header: React.FC = () => {
             type="button"
             onClick={toggleTheme}
             className="inline-flex items-center justify-center border-2 border-black bg-white dark:bg-black dark:border-white p-2 hover:opacity-60 transition-opacity"
-            style={{ 
-              boxShadow: theme === 'dark' 
-                ? "4px 4px 0px 0px rgba(255,255,255,1)" 
-                : "4px 4px 0px 0px rgba(0,0,0,1)" 
+            style={{
+              boxShadow:
+                theme === "dark"
+                  ? "4px 4px 0px 0px rgba(255,255,255,1)"
+                  : "4px 4px 0px 0px rgba(0,0,0,1)",
             }}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            aria-label={`Switch to ${
+              theme === "light" ? "dark" : "light"
+            } mode`}
           >
-            {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            {theme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+          </button>
+          <button
+            type="button"
+            title={`Keyboard shortcuts (${getModifierKey()} + /)`}
+            aria-label="Show keyboard shortcuts"
+            className="inline-flex items-center justify-center border-2 border-black bg-white dark:bg-black dark:border-white p-2 hover:opacity-60 transition-opacity"
+            style={{
+              boxShadow:
+                theme === "dark"
+                  ? "4px 4px 0px 0px rgba(255,255,255,1)"
+                  : "4px 4px 0px 0px rgba(0,0,0,1)",
+            }}
+            onClick={() => {
+              window.dispatchEvent(
+                new KeyboardEvent("keydown", {
+                  key: "/",
+                  ctrlKey: true,
+                  metaKey: true,
+                  bubbles: true,
+                }),
+              );
+            }}
+          >
+            <Keyboard size={20} />
           </button>
           <a
             href="https://github.com/Akanimoh12/stellar-tipz"
@@ -120,10 +154,11 @@ const Header: React.FC = () => {
           <button
             type="button"
             className="md:hidden inline-flex items-center justify-center border-2 border-black bg-white dark:bg-black dark:border-white p-2"
-            style={{ 
-              boxShadow: theme === 'dark' 
-                ? "4px 4px 0px 0px rgba(255,255,255,1)" 
-                : "4px 4px 0px 0px rgba(0,0,0,1)" 
+            style={{
+              boxShadow:
+                theme === "dark"
+                  ? "4px 4px 0px 0px rgba(255,255,255,1)"
+                  : "4px 4px 0px 0px rgba(0,0,0,1)",
             }}
             aria-label={
               mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"
@@ -175,6 +210,13 @@ const Header: React.FC = () => {
                 Dashboard
               </Link>
               <Link
+                to="/transactions"
+                onClick={closeMobileMenu}
+                className="border-2 border-black bg-white dark:bg-black dark:border-white dark:text-white px-4 py-3 font-bold uppercase tracking-wide"
+              >
+                Transactions
+              </Link>
+              <Link
                 to="/profile"
                 onClick={closeMobileMenu}
                 className="border-2 border-black bg-white dark:bg-black dark:border-white dark:text-white px-4 py-3 font-bold uppercase tracking-wide"
@@ -184,23 +226,30 @@ const Header: React.FC = () => {
 
               <div className="flex flex-col gap-2 pt-2 border-t-2 border-black dark:border-white">
                 <div className="flex items-center justify-between px-2">
-                  <span className="text-xs font-bold uppercase dark:text-white">Theme</span>
+                  <span className="text-xs font-bold uppercase dark:text-white">
+                    Theme
+                  </span>
                   <button
                     type="button"
                     onClick={toggleTheme}
                     className="inline-flex items-center justify-center border-2 border-black bg-white dark:bg-black dark:border-white p-2 hover:opacity-60 transition-opacity"
-                    style={{ 
-                      boxShadow: theme === 'dark' 
-                        ? "4px 4px 0px 0px rgba(255,255,255,1)" 
-                        : "4px 4px 0px 0px rgba(0,0,0,1)" 
+                    style={{
+                      boxShadow:
+                        theme === "dark"
+                          ? "4px 4px 0px 0px rgba(255,255,255,1)"
+                          : "4px 4px 0px 0px rgba(0,0,0,1)",
                     }}
-                    aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                    aria-label={`Switch to ${
+                      theme === "light" ? "dark" : "light"
+                    } mode`}
                   >
-                    {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+                    {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
                   </button>
                 </div>
                 <div className="flex items-center justify-between px-2">
-                  <span className="text-xs font-bold uppercase dark:text-white">Network</span>
+                  <span className="text-xs font-bold uppercase dark:text-white">
+                    Network
+                  </span>
                   <NetworkBadge />
                 </div>
                 <Button className="w-full" onClick={handleWalletAction}>

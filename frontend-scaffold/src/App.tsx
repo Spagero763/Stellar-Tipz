@@ -1,12 +1,13 @@
-import React from 'react';
-import { BrowserRouter, useRoutes } from 'react-router-dom';
+import React from "react";
+import { BrowserRouter, useRoutes } from "react-router-dom";
 
-import Header from '@/components/layout/Header';
-import Footer from '@/components/layout/Footer';
-import ScrollToTop from '@/components/shared/ScrollToTop';
-import ErrorBoundary from '@/components/shared/ErrorBoundary';
-import ToastContainer from '@/components/shared/ToastContainer';
-import { routes } from '@/routes';
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import ScrollToTop from "@/components/shared/ScrollToTop";
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
+import ToastContainer from "@/components/shared/ToastContainer";
+import KeyboardShortcutsProvider from "@/components/shared/KeyboardShortcutsProvider";
+import { routes } from "@/routes";
 
 const AppRoutes: React.FC = () => {
   const routeElements = useRoutes(routes);
@@ -14,6 +15,7 @@ const AppRoutes: React.FC = () => {
   return (
     <>
       <ScrollToTop />
+      <KeyboardShortcutsProvider />
       <ErrorBoundary>
         <div className="min-h-screen flex flex-col bg-white dark:bg-black">
           <a
@@ -23,9 +25,7 @@ const AppRoutes: React.FC = () => {
             Skip to main content
           </a>
           <Header />
-          <div className="flex-1">
-            {routeElements}
-          </div>
+          <div className="flex-1">{routeElements}</div>
           <Footer />
         </div>
       </ErrorBoundary>
