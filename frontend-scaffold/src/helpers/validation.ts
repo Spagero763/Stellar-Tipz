@@ -59,3 +59,30 @@ export const validateMessage = (message: string): ValidationResult => {
 
   return { valid: true };
 };
+
+const X_HANDLE_RE = /^@?[a-zA-Z0-9_]{1,15}$/;
+
+export const validateXHandle = (handle: string): ValidationResult => {
+  const trimmed = handle.trim();
+
+  if (trimmed.length === 0) {
+    return { valid: false, error: "X handle cannot be empty." };
+  }
+
+  if (trimmed.length > 16) {
+    return { valid: false, error: "X handle must be 16 characters or fewer." };
+  }
+
+  if (!X_HANDLE_RE.test(trimmed)) {
+    return {
+      valid: false,
+      error: "X handle contains invalid characters. Only alphanumeric and underscores allowed.",
+    };
+  }
+
+  if (trimmed === "@") {
+    return { valid: false, error: "X handle cannot be just '@'." };
+  }
+
+  return { valid: true };
+};

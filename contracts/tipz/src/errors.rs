@@ -52,4 +52,6 @@ pub enum ContractError {
     ProfileNotActive = 22,
     /// No pending admin proposal exists
     NoPendingAdmin = 23,
+    /// X handle is invalid (must be 1-16 chars, @?alphanumeric + underscore)
+    InvalidXHandle = 24,
 }

@@ -12,7 +12,7 @@ use crate::{TipzContract, TipzContractClient};
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-fn setup() -> (Env, TipzContractClient<'static>) {
+pub(crate) fn setup() -> (Env, TipzContractClient<'static>) {
     let env = Env::default();
     env.mock_all_auths();
 
