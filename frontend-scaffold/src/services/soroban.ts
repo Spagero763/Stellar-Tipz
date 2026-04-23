@@ -1,4 +1,5 @@
 import {
+  Account,
   Address,
   Contract,
   Memo,
@@ -90,6 +91,21 @@ export const getTxBuilder = async (
     fee,
     networkPassphrase,
   });
+};
+
+/**
+ * Build a TransactionBuilder for simulation-only (read-only) contract calls.
+ *
+ * Soroban simulation does not require the source account to exist on Horizon.
+ * Using a minimal in-memory Account avoids 404s when no wallet is connected.
+ */
+export const getSimulationTxBuilder = (
+  pubKey: string,
+  fee: string,
+  networkPassphrase: string,
+) => {
+  const source = new Account(pubKey, "0");
+  return new TransactionBuilder(source, { fee, networkPassphrase });
 };
 
 //  Can be used whenever we need to perform a "read-only" operation

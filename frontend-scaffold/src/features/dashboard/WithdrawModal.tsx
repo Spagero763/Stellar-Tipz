@@ -14,6 +14,12 @@ interface WithdrawModalProps {
   feeBps: number;
   minWithdrawal?: number | string;
   onClose: () => void;
+  onSuccess?: (params: {
+    amountXlm: string;
+    amountStroops: string;
+    txHash: string;
+  }) => void;
+  onFailure?: () => void;
 }
 
 const WithdrawModal: React.FC<WithdrawModalProps> = ({
@@ -22,6 +28,8 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
   feeBps,
   minWithdrawal,
   onClose,
+  onSuccess,
+  onFailure,
 }) => {
   const { withdrawTips, withdrawing, error, txHash, reset } = useTipz();
   const [amount, setAmount] = useState("");
@@ -88,9 +96,15 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
     }
 
     try {
-      await withdrawTips(amount);
+      const hash = await withdrawTips(amount);
+      onSuccess?.({
+        amountXlm: amount,
+        amountStroops: requestedStroops,
+        txHash: hash,
+      });
     } catch (err) {
       console.error("Withdrawal failed:", err);
+      onFailure?.();
     }
   };
 
