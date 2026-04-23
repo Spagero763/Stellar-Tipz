@@ -25,6 +25,20 @@ if (!("IntersectionObserver" in window)) {
   });
 }
 
+// Recharts (ResponsiveContainer) depends on ResizeObserver in the DOM environment.
+if (!("ResizeObserver" in window)) {
+  class MockResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  Object.defineProperty(window, "ResizeObserver", {
+    writable: true,
+    configurable: true,
+    value: MockResizeObserver,
+  });
+}
+
 const mockWalletKit = {
   openModal: vi.fn(),
   setWallet: vi.fn(),

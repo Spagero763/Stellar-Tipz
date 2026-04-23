@@ -14,6 +14,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useWalletStore } from "@/store/walletStore";
 import Skeleton from "@/components/ui/Skeleton";
 import DashboardStatsSkeleton from "./DashboardStatsSkeleton";
+import EarningsChart from "./EarningsChart";
 
 import EarningsTab from "./EarningsTab";
 import OverviewTab from "./OverviewTab";
@@ -126,7 +127,12 @@ const DashboardPage: React.FC = () => {
       label: "Overview",
       content: (
         <div className="pt-6">
-          <OverviewTab />
+          <div className="space-y-8">
+            <OverviewTab />
+            <div className="border-4 border-black bg-white p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+              <EarningsChart tips={tips} />
+            </div>
+          </div>
         </div>
       ),
     },
