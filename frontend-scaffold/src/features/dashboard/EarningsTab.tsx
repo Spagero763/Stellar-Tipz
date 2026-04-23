@@ -5,13 +5,14 @@ import AmountDisplay from "../../components/shared/AmountDisplay";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import EmptyState from "../../components/ui/EmptyState";
-import { useDashboard } from "../../hooks/useDashboard";
 import { formatTimestamp } from "../../helpers/format";
 import BalanceCard from "./BalanceCard";
 import EarningsChart from "./EarningsChart";
 import WithdrawModal from "./WithdrawModal";
 import Loader from "../../components/ui/Loader";
 import { Tip } from "../../types/contract";
+import { useToastStore } from "@/store/toastStore";
+import { useDashboardContext } from "./DashboardContext";
 
 interface WithdrawalHistoryItem {
   id: string;
@@ -24,8 +25,17 @@ interface WithdrawalHistoryItem {
 const DEFAULT_FEE_BPS = 200;
 
 const EarningsTab: React.FC = () => {
-  const { profile, tips, stats, loading } = useDashboard();
+  const {
+    profile,
+    tips,
+    stats,
+    loading,
+    applyOptimisticWithdrawal,
+    revertOptimisticWithdrawal,
+    refetch,
+  } = useDashboardContext();
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const { addToast } = useToastStore();
   const feeBps = stats?.feeBps ?? DEFAULT_FEE_BPS;
 
   // Manual calculation for withdrawal history based on tips (placeholder logic since contract doesn't return withdrawals yet)
@@ -149,6 +159,16 @@ const EarningsTab: React.FC = () => {
         feeBps={feeBps}
         minWithdrawal={10}
         onClose={() => setWithdrawOpen(false)}
+        onSuccess={({ amountXlm, amountStroops }) => {
+          applyOptimisticWithdrawal(amountStroops);
+          addToast({
+            type: "success",
+            message: `Withdrawal successful: ${amountXlm} XLM`,
+            duration: 3500,
+          });
+          refetch();
+        }}
+        onFailure={() => revertOptimisticWithdrawal()}
       />
     </div>
   );

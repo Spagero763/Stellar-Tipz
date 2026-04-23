@@ -11,7 +11,7 @@ import {
 
 import { stroopToXlmBigNumber } from "../../helpers/format";
 import type { Tip } from "../../types/contract";
-import { useDashboard } from "../../hooks/useDashboard";
+import { useDashboardContext } from "./DashboardContext";
 
 type View = "daily" | "weekly" | "monthly";
 
@@ -143,7 +143,7 @@ function buildEarningsFromTips(tips: Tip[]) {
 }
 
 const EarningsChart: React.FC<EarningsChartProps> = ({ tips, earningsData }) => {
-  const dashboard = useDashboard();
+  const dashboard = useDashboardContext();
   const resolvedTips = tips ?? dashboard.tips;
   const resolvedEarnings = earningsData ?? buildEarningsFromTips(resolvedTips);
 

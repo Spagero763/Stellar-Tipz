@@ -24,12 +24,14 @@ import OverviewTab from "./OverviewTab";
 import SettingsTab from "./SettingsTab";
 import TipsTab from "./TipsTab";
 import FavoritesList from "./FavoritesList";
+import { DashboardProvider } from "./DashboardContext";
 
 const DashboardPage: React.FC = () => {
   usePageTitle("Dashboard");
 
   const { connected } = useWalletStore();
-  const { profile, tips, loading, error, refetch } = useDashboard();
+  const dashboard = useDashboard();
+  const { profile, loading, error, refetch, tips } = dashboard;
   const { latestTip, markSeen, unseenCount } = useTipNotifications(
     profile?.owner,
   );
@@ -177,6 +179,7 @@ const DashboardPage: React.FC = () => {
   ];
 
   return (
+    <DashboardProvider value={dashboard}>
     <PageContainer maxWidth="xl" className="space-y-8 py-10">
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
@@ -232,6 +235,7 @@ const DashboardPage: React.FC = () => {
 
       <Tabs tabs={tabs} defaultTab="overview" />
     </PageContainer>
+    </DashboardProvider>
   );
 };
 

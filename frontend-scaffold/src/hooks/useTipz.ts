@@ -13,7 +13,7 @@ interface TipState {
 
 interface UseTipzReturn extends TipState {
   sendTip: (creator: string, amount: string, message: string) => Promise<void>;
-  withdrawTips: (amount: string) => Promise<void>;
+  withdrawTips: (amount: string) => Promise<string>;
   reset: () => void;
 }
 
@@ -54,7 +54,7 @@ export const useTipz = (): UseTipzReturn => {
     }
   }, [contractSendTip]);
 
-  const withdrawTips = useCallback(async (amount: string): Promise<void> => {
+  const withdrawTips = useCallback(async (amount: string): Promise<string> => {
     setState({ ...initialState, withdrawing: true, txStatus: 'signing' });
     try {
       const result = await contractWithdrawTips(amount);
@@ -65,6 +65,7 @@ export const useTipz = (): UseTipzReturn => {
         withdrawing: false, 
         txHash: result 
       }));
+      return result;
     } catch (err) {
       console.error('Withdrawal failed:', err);
       const message = err instanceof Error ? err.message : 'Failed to withdraw tips';

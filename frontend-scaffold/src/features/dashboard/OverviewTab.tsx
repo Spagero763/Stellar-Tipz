@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   TrendingUp,
   Coins,
@@ -10,11 +10,12 @@ import EmptyState from "../../components/ui/EmptyState";
 import ActivityMini from "./ActivityMini";
 import QuickActions from "./QuickActions";
 import WithdrawModal from "./WithdrawModal";
-import { useDashboard } from "../../hooks/useDashboard";
 import { Tip } from "../../types/contract";
 import { stroopToXlm } from "../../helpers/format";
 import DashboardStatsSkeleton from "./DashboardStatsSkeleton";
 import Skeleton from "@/components/ui/Skeleton";
+import { useToastStore } from "@/store/toastStore";
+import { useDashboardContext } from "./DashboardContext";
 
 // Build a simple 7-day bar chart dataset from tips
 function buildWeeklyChart(tips: Tip[]) {
@@ -47,8 +48,35 @@ function countThisWeek(tips: Tip[]) {
 
 
 const OverviewTab: React.FC = () => {
-  const { profile, tips, stats, loading, error } = useDashboard();
+  const {
+    profile,
+    tips,
+    stats,
+    loading,
+    error,
+    applyOptimisticWithdrawal,
+    revertOptimisticWithdrawal,
+    refetch,
+  } = useDashboardContext();
   const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const { addToast } = useToastStore();
+
+  const handleWithdrawSuccess = useCallback(
+    (params: { amountXlm: string; amountStroops: string; txHash: string }) => {
+      applyOptimisticWithdrawal(params.amountStroops);
+      addToast({
+        type: "success",
+        message: `Withdrawal successful: ${params.amountXlm} XLM`,
+        duration: 3500,
+      });
+      refetch();
+    },
+    [addToast, applyOptimisticWithdrawal, refetch],
+  );
+
+  const handleWithdrawFailure = useCallback(() => {
+    revertOptimisticWithdrawal();
+  }, [revertOptimisticWithdrawal]);
 
   if (loading && !profile) {
     return (
@@ -185,6 +213,8 @@ const OverviewTab: React.FC = () => {
         feeBps={stats?.feeBps || 200}
         minWithdrawal={10}
         onClose={() => setWithdrawOpen(false)}
+        onSuccess={handleWithdrawSuccess}
+        onFailure={handleWithdrawFailure}
       />
     </div>
   );
