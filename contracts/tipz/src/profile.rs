@@ -106,6 +106,12 @@ pub fn register_profile(
         balance: 0,
         registered_at: now,
         updated_at: now,
+        verification: crate::types::VerificationStatus {
+            is_verified: false,
+            verification_type: None,
+            verified_at: None,
+            revoked_at: None,
+        },
     };
 
     storage::set_profile(env, &profile);

@@ -52,6 +52,12 @@ pub enum ContractError {
     ProfileNotActive = 22,
     /// No pending admin proposal exists
     NoPendingAdmin = 23,
+    /// Creator is already verified
+    AlreadyVerified = 24,
+    /// Creator is not verified
+    NotVerified = 25,
+    /// Caller is not the contract admin
+    Unauthorized = 26,
     /// X handle is invalid (must be 1-16 chars, @?alphanumeric + underscore)
     InvalidXHandle = 24,
 }

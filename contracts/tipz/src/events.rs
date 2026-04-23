@@ -198,3 +198,32 @@ pub fn emit_x_metrics_batch_completed(
         (processed, skipped_count, skipped_entries),
     );
 }
+
+// ── Verification events ───────────────────────────────────────────────────────
+
+/// Topics : `("verification", "requested")`
+/// Data   : `(creator: Address, verification_type: VerificationType)`
+pub fn emit_verification_requested(env: &Env, creator: &Address, verification_type: &crate::types::VerificationType) {
+    env.events().publish(
+        (symbol_short!("verification"), symbol_short!("requested")),
+        (creator.clone(), verification_type.clone()),
+    );
+}
+
+/// Topics : `("verification", "approved")`
+/// Data   : `(creator: Address, verification_type: VerificationType)`
+pub fn emit_verification_approved(env: &Env, creator: &Address, verification_type: &crate::types::VerificationType) {
+    env.events().publish(
+        (symbol_short!("verification"), symbol_short!("approved")),
+        (creator.clone(), verification_type.clone()),
+    );
+}
+
+/// Topics : `("verification", "revoked")`
+/// Data   : `(creator: Address,)`
+pub fn emit_verification_revoked(env: &Env, creator: &Address) {
+    env.events().publish(
+        (symbol_short!("verification"), symbol_short!("revoked")),
+        (creator.clone(),),
+    );
+}

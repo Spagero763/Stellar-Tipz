@@ -2,6 +2,29 @@
 
 use soroban_sdk::{contracttype, Address, String};
 
+/// Verification type for creator profiles.
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub enum VerificationType {
+    Identity,
+    SocialMedia,
+    Community,
+}
+
+/// Verification status for a creator profile.
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct VerificationStatus {
+    /// Whether the creator is verified
+    pub is_verified: bool,
+    /// Verification type (if verified)
+    pub verification_type: Option<VerificationType>,
+    /// Timestamp when verification was granted
+    pub verified_at: Option<u64>,
+    /// Timestamp when verification was revoked (if applicable)
+    pub revoked_at: Option<u64>,
+}
+
 /// Creator profile stored on-chain.
 #[contracttype]
 #[derive(Clone, Debug, PartialEq)]
@@ -34,6 +57,8 @@ pub struct Profile {
     pub registered_at: u64,
     /// Last profile update timestamp
     pub updated_at: u64,
+    /// Verification status
+    pub verification: VerificationStatus,
 }
 
 /// Individual tip record stored in temporary storage with a TTL of ~7 days.

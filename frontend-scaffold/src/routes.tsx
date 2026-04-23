@@ -17,6 +17,8 @@ const TipPage = lazy(() => import("@/features/tipping/TipPage"));
 const TransactionsPage = lazy(
   () => import("@/features/transactions/TransactionsPage"),
 );
+const SettingsPage = lazy(() => import("@/features/settings/SettingsPage"));
+const AdminDashboard = lazy(() => import("@/features/admin/AdminDashboard"));
 const NotFoundPage = lazy(() => import("@/features/not-found/NotFoundPage"));
 
 /**
@@ -56,6 +58,14 @@ export const routes: RouteObject[] = [
   {
     path: "/transactions",
     element: protect(<TransactionsPage />),
+  },
+  {
+    path: "/settings",
+    element: protect(<SettingsPage />),
+  },
+  {
+    path: "/admin",
+    element: protect(<AdminDashboard />),
   },
   {
     path: "*",

@@ -84,6 +84,10 @@ pub enum DataKey {
     CreatorTip(Address, u32),
     /// Pending admin address (proposed but not yet accepted)
     PendingAdmin,
+    /// Verification status by creator address
+    VerificationStatus(Address),
+    /// Pending verification request by creator address
+    VerificationRequest(Address),
 }
 
 /// Extend the contract instance TTL when a write transaction starts.
@@ -876,4 +880,46 @@ mod tests {
             assert!(!has_profile(&env, &owner));
         });
     }
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
+// Verification storage functions
+// ──────────────────────────────────────────────────────────────────────────────
+
+pub fn get_verification_status(env: &Env, address: &Address) -> Option<crate::types::VerificationStatus> {
+    env.storage()
+        .persistent()
+        .get(&DataKey::VerificationStatus(address.clone()))
+}
+
+pub fn set_verification_status(env: &Env, address: &Address, status: &crate::types::VerificationStatus) {
+    env.storage()
+        .persistent()
+        .set(&DataKey::VerificationStatus(address.clone()), status);
+    bump_profile_ttl(env, address);
+}
+
+pub fn remove_verification_status(env: &Env, address: &Address) {
+    env.storage()
+        .persistent()
+        .remove(&DataKey::VerificationStatus(address.clone()));
+}
+
+pub fn get_verification_request(env: &Env, address: &Address) -> Option<crate::types::VerificationType> {
+    env.storage()
+        .persistent()
+        .get(&DataKey::VerificationRequest(address.clone()))
+}
+
+pub fn set_verification_request(env: &Env, address: &Address, verification_type: &crate::types::VerificationType) {
+    env.storage()
+        .persistent()
+        .set(&DataKey::VerificationRequest(address.clone()), verification_type);
+    bump_profile_ttl(env, address);
+}
+
+pub fn remove_verification_request(env: &Env, address: &Address) {
+    env.storage()
+        .persistent()
+        .remove(&DataKey::VerificationRequest(address.clone()));
 }
