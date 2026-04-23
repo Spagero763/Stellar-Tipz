@@ -1,11 +1,10 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+
 
 import AmountDisplay from '@/components/shared/AmountDisplay';
 import EmptyState from '@/components/ui/EmptyState';
 import { useTips } from '@/hooks/useTips';
-import { useContract } from '@/hooks';
-import { useState, useEffect } from 'react';
+
 import Loader from '@/components/ui/Loader';
 
 interface RecentTipsProps {

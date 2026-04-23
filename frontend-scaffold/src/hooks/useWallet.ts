@@ -114,7 +114,10 @@ export const useWallet = () => {
           connect(address, walletType);
         }
       } catch (err) {
-        console.warn("Auto-reconnect failed — wallet extension may be unavailable:", err);
+        console.warn(
+          "Auto-reconnect failed — wallet extension may be unavailable:",
+          err,
+        );
         if (!cancelled) {
           // Clear persisted state so we don't retry on next load
           disconnect();
@@ -191,7 +194,9 @@ export const useWallet = () => {
 
       signTransaction: async (xdr: string): Promise<string> => {
         if (!publicKey) {
-          throw new Error("Please connect your wallet before signing transactions");
+          throw new Error(
+            "Please connect your wallet before signing transactions",
+          );
         }
 
         setSigningStatus("signing");
@@ -201,11 +206,10 @@ export const useWallet = () => {
           return signed;
         } catch (err) {
           setSigningStatus("error");
-          const message =
-            err instanceof Error ? err.message : String(err);
+          const message = err instanceof Error ? err.message : String(err);
           // Normalise rejection/cancellation messages
           if (/cancel|reject|denied|declined|closed/i.test(message)) {
-            throw new Error("Transaction rejected by user");
+            throw new Error("Transaction rejected by user", { cause: err });
           }
           throw err;
         } finally {
@@ -239,6 +243,16 @@ export const useWallet = () => {
       signingStatus,
       ...actions,
     }),
-    [publicKey, connected, connecting, isReconnecting, error, network, walletType, signingStatus, actions],
+    [
+      publicKey,
+      connected,
+      connecting,
+      isReconnecting,
+      error,
+      network,
+      walletType,
+      signingStatus,
+      actions,
+    ],
   );
 };

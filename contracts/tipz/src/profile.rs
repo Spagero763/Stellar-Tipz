@@ -56,6 +56,24 @@ pub fn register_profile(
     validation::validate_display_name(&display_name)?;
     validation::validate_bio(&bio)?;
     validation::validate_image_url(&image_url)?;
+    validation::validate_x_handle(&x_handle)?;
+
+    // Normalize x_handle: prepend @ if missing.
+    // Length is already validated (1-16 including optional @).
+    let mut normalized_x = x_handle.clone();
+    let mut handle_buf = [0u8; 16];
+    let n = x_handle.len() as usize;
+    x_handle.copy_into_slice(&mut handle_buf[..n]);
+    if handle_buf[0] != b'@' {
+        let mut full_buf = [0u8; 17];
+        full_buf[0] = b'@';
+        let n = x_handle.len() as usize;
+        x_handle.copy_into_slice(&mut full_buf[1..1 + n]);
+        // SAFETY: x_handle is validated to be alphanumeric/underscore ASCII.
+        if let Ok(s) = core::str::from_utf8(&full_buf[..1 + n]) {
+            normalized_x = String::from_str(env, s);
+        }
+    }
 
     // --- Duplicate checks ---
 
@@ -78,7 +96,7 @@ pub fn register_profile(
         display_name,
         bio,
         image_url,
-        x_handle,
+        x_handle: normalized_x,
         x_followers: 0,
         x_engagement_avg: 0,
         // Base credit score assigned at registration.
@@ -147,7 +165,24 @@ pub fn update_profile(
     }
 
     if let Some(ref handle) = x_handle {
-        profile.x_handle = handle.clone();
+        validation::validate_x_handle(handle)?;
+
+        // Normalize x_handle: prepend @ if missing.
+        let mut normalized_x = handle.clone();
+        let mut handle_buf = [0u8; 16];
+        let n = handle.len() as usize;
+        handle.copy_into_slice(&mut handle_buf[..n]);
+        if handle_buf[0] != b'@' {
+            let mut full_buf = [0u8; 17];
+            full_buf[0] = b'@';
+            let n = handle.len() as usize;
+            handle.copy_into_slice(&mut full_buf[1..1 + n]);
+            if let Ok(s) = core::str::from_utf8(&full_buf[..1 + n]) {
+                normalized_x = String::from_str(env, s);
+            }
+        }
+
+        profile.x_handle = normalized_x;
     }
 
     profile.updated_at = env.ledger().timestamp();

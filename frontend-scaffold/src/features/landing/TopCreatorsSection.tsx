@@ -1,22 +1,34 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Trophy } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useContract } from '@/hooks';
-import { LeaderboardEntry } from '@/types/contract';
-import ProfileCard, { ProfileCardSkeleton } from '@/components/shared/ProfileCard';
-import EmptyState from '@/components/ui/EmptyState';
-import ErrorState from '@/components/shared/ErrorState';
-import { categorizeError } from '@/helpers/error';
+import React, { useEffect, useState, useCallback } from "react";
+import { motion } from "framer-motion";
+import { ArrowRight, Trophy } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useContract } from "@/hooks";
+import { LeaderboardEntry } from "@/types/contract";
+import ProfileCard from "@/components/shared/ProfileCard";
+import Skeleton from "@/components/ui/Skeleton";
+import EmptyState from "@/components/ui/EmptyState";
+import ErrorState from "@/components/shared/ErrorState";
+import { categorizeError } from "@/helpers/error";
+import { env } from "@/helpers/env";
 
 export default function TopCreatorsSection() {
   const [creators, setCreators] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(
+    Boolean(env.contractId) || import.meta.env.MODE === "test",
+  );
   const [error, setError] = useState<string | null>(null);
   const { getLeaderboard } = useContract();
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (
+      !env.contractId &&
+      !env.useMockData &&
+      import.meta.env.MODE !== "test"
+    ) {
+      return;
+    }
+
     let active = true;
     getLeaderboard(5)
       .then((data) => {
@@ -27,7 +39,7 @@ export default function TopCreatorsSection() {
       })
       .catch((err) => {
         if (active) {
-          console.error('Failed to fetch leaderboard:', err);
+          console.error("Failed to fetch leaderboard:", err);
           setError(String(err));
           setLoading(false);
         }
@@ -38,6 +50,17 @@ export default function TopCreatorsSection() {
   }, [getLeaderboard]);
 
   const handleRetry = useCallback(() => {
+    if (
+      !env.contractId &&
+      !env.useMockData &&
+      import.meta.env.MODE !== "test"
+    ) {
+      setCreators([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     getLeaderboard(5)
@@ -46,14 +69,14 @@ export default function TopCreatorsSection() {
         setLoading(false);
       })
       .catch((err) => {
-        console.error('Failed to fetch leaderboard:', err);
+        console.error("Failed to fetch leaderboard:", err);
         setError(String(err));
         setLoading(false);
       });
   }, [getLeaderboard]);
 
   const handleViewFullLeaderboard = () => {
-    navigate('/leaderboard');
+    navigate("/leaderboard");
   };
 
   return (
@@ -78,7 +101,10 @@ export default function TopCreatorsSection() {
             className="group inline-flex items-center gap-2 text-sm font-black uppercase tracking-wider hover:underline"
           >
             View Full Leaderboard
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            <ArrowRight
+              size={18}
+              className="group-hover:translate-x-1 transition-transform"
+            />
           </button>
         </div>
 
@@ -89,10 +115,7 @@ export default function TopCreatorsSection() {
             ))}
           </div>
         ) : error ? (
-          <ErrorState 
-            category={categorizeError(error)} 
-            onRetry={handleRetry}
-          />
+          <ErrorState category={categorizeError(error)} onRetry={handleRetry} />
         ) : creators.length === 0 ? (
           <div className="border-3 border-black bg-white">
             <EmptyState
@@ -100,14 +123,14 @@ export default function TopCreatorsSection() {
               description="Be the first to tip someone and start the leaderboard!"
               action={{
                 label: "Find Creators",
-                onClick: () => navigate('/leaderboard')
+                onClick: () => navigate("/leaderboard"),
               }}
             />
           </div>
         ) : (
           <div
             className="flex gap-6 overflow-x-auto pb-8 -mx-6 px-6 no-scrollbar"
-            style={{ WebkitOverflowScrolling: 'touch' }}
+            style={{ WebkitOverflowScrolling: "touch" }}
           >
             {creators.map((creator, index) => (
               <motion.div

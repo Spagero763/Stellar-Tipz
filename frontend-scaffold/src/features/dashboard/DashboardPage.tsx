@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutDashboard, Wallet } from "lucide-react";
+import { Bell, LayoutDashboard, Wallet, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import PageContainer from "@/components/layout/PageContainer";
@@ -11,7 +11,10 @@ import Tabs from "@/components/ui/Tabs";
 import { categorizeError } from "@/helpers/error";
 import { useDashboard } from "@/hooks/useDashboard";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useTipNotifications } from "@/hooks/useTipNotifications";
 import { useWalletStore } from "@/store/walletStore";
+import { stroopToXlm } from "@/helpers/format";
+import TipQRCode from "@/features/profile/TipQRCode";
 import Skeleton from "@/components/ui/Skeleton";
 import DashboardStatsSkeleton from "./DashboardStatsSkeleton";
 import EarningsChart from "./EarningsChart";
@@ -21,14 +24,14 @@ import OverviewTab from "./OverviewTab";
 import SettingsTab from "./SettingsTab";
 import TipsTab from "./TipsTab";
 
-// Number of tips to display in preview sections
-const TIPS_PREVIEW = 5;
-
 const DashboardPage: React.FC = () => {
   usePageTitle("Dashboard");
 
   const { connected } = useWalletStore();
-  const { profile, tips, loading, error, refetch } = useDashboard();
+  const { profile, loading, error, refetch } = useDashboard();
+  const { latestTip, markSeen, unseenCount } = useTipNotifications(
+    profile?.owner,
+  );
 
   if (!connected) {
     return (
@@ -132,6 +135,9 @@ const DashboardPage: React.FC = () => {
             <div className="border-4 border-black bg-white p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
               <EarningsChart tips={tips} />
             </div>
+          <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+            <OverviewTab />
+            <TipQRCode username={creator.username} />
           </div>
         </div>
       ),
@@ -189,6 +195,31 @@ const DashboardPage: React.FC = () => {
           <p className="text-sm font-bold">@{creator.username}</p>
         </div>
       </section>
+
+      {latestTip && unseenCount > 0 && (
+        <div className="flex flex-col gap-3 border-3 border-black bg-yellow-100 p-4 shadow-brutalist sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <Bell size={22} className="mt-1 shrink-0" />
+            <div>
+              <p className="text-sm font-black uppercase">New tip received</p>
+              <p className="text-sm font-bold text-gray-700">
+                {stroopToXlm(latestTip.amount)} XLM from{" "}
+                {latestTip.tipper.slice(0, 6)}...{latestTip.tipper.slice(-6)}
+                {latestTip.message ? ` - ${latestTip.message}` : ""}
+              </p>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            icon={<X size={16} />}
+            onClick={markSeen}
+          >
+            Mark seen
+          </Button>
+        </div>
+      )}
 
       <Tabs tabs={tabs} defaultTab="overview" />
     </PageContainer>

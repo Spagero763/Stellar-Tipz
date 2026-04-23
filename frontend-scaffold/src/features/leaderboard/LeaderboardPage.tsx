@@ -12,72 +12,7 @@ import ErrorState from "../../components/shared/ErrorState";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import type { LeaderboardEntry } from "@/types";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
-import LeaderboardSkeleton from "./LeaderboardSkeleton";
-import EmptyState from "@/components/ui/EmptyState";
-import Podium from "./Podium";
-import LeaderboardTable from "./LeaderboardTable";
-import LeaderboardFilter from "./LeaderboardFilter";
 import { categorizeError } from "@/helpers/error";
-
-const PodiumCard: React.FC<{
-  entry: LeaderboardEntry;
-  place: 1 | 2 | 3;
-}> = ({ entry, place }) => {
-  const heights: Record<1 | 2 | 3, string> = {
-    1: "min-h-[220px] md:min-h-[260px]",
-    2: "min-h-[180px] md:min-h-[200px]",
-    3: "min-h-[160px] md:min-h-[180px]",
-  };
-  const labels: Record<1 | 2 | 3, string> = {
-    1: "1st",
-    2: "2nd",
-    3: "3rd",
-  };
-
-  return (
-    <Card
-      padding="lg"
-      className={`flex flex-col justify-between ${heights[place]} ${
-        place === 1 ? "relative z-10 ring-2 ring-black md:scale-[1.02]" : ""
-      }`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <span className="text-4xl font-black leading-none">
-          {labels[place]}
-        </span>
-        <CreditBadge
-          score={entry.creditScore}
-          showScore={false}
-          className="shrink-0"
-        />
-      </div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <Avatar
-            address={entry.address}
-            alt={entry.username}
-            fallback={entry.username}
-            size="lg"
-          />
-          <div className="min-w-0">
-            <Link
-              to={`/@${entry.username}`}
-              className="text-xl font-black uppercase hover:underline break-all md:text-2xl"
-            >
-              @{entry.username}
-            </Link>
-            <div className="mt-1">
-              <AmountDisplay
-                amount={entry.totalTipsReceived}
-                className="text-sm"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
-};
 
 
 const PAGE_SIZE = 5;

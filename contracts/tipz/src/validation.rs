@@ -25,6 +25,9 @@ const BIO_MAX_LEN: u32 = 280;
 /// Maximum allowed image URL length in bytes.
 const IMAGE_URL_MAX_LEN: u32 = 256;
 
+/// Maximum allowed X (Twitter) handle length in bytes (including optional @).
+const X_HANDLE_MAX_LEN: u32 = 16;
+
 /// Validates a username against Tipz naming rules.
 ///
 /// Usernames serve as unique identifiers for creator profiles. They appear
@@ -216,6 +219,67 @@ pub fn validate_bio(bio: &String) -> Result<(), ContractError> {
 pub fn validate_image_url(image_url: &String) -> Result<(), ContractError> {
     if image_url.len() > IMAGE_URL_MAX_LEN {
         return Err(ContractError::InvalidImageUrl);
+    }
+
+    Ok(())
+}
+
+/// Validates an X (Twitter) handle.
+///
+/// X handles are used for social verification and profile display.
+///
+/// # Rules
+///
+/// 1. **Length**: Must be between 1 and 16 bytes (inclusive).
+/// 2. **Format**: Must match `@?[a-zA-Z0-9_]{1,15}`.
+///    - Optional leading `@` sign.
+///    - Remainder must be 1-15 alphanumeric characters or underscores.
+///
+/// # Implementation Notes
+///
+/// This validator checks for the optional `@` prefix and then validates that
+/// the rest of the string contains only allowed characters and follows the
+/// length constraints.
+///
+/// # Errors
+///
+/// Returns [`ContractError::InvalidXHandle`] if the handle is empty, too long,
+/// or contains invalid characters.
+pub fn validate_x_handle(x_handle: &String) -> Result<(), ContractError> {
+    let len = x_handle.len();
+
+    if len == 0 || len > X_HANDLE_MAX_LEN {
+        return Err(ContractError::InvalidXHandle);
+    }
+
+    let mut buf = [0u8; 16];
+    let n = len as usize;
+    x_handle.copy_into_slice(&mut buf[..n]);
+    let bytes = &buf[..n];
+
+    let mut start_idx = 0;
+    if bytes[0] == b'@' {
+        start_idx = 1;
+        // If it's just "@", it's invalid.
+        if len == 1 {
+            return Err(ContractError::InvalidXHandle);
+        }
+    }
+
+    // The handle part (excluding optional @) must be 1-15 characters.
+    if (len - start_idx) > 15 {
+        return Err(ContractError::InvalidXHandle);
+    }
+
+    for &b in bytes[(start_idx as usize)..].iter() {
+        let is_upper = b.is_ascii_uppercase();
+        let is_lower = b.is_ascii_lowercase();
+        let is_digit = b.is_ascii_digit();
+        let is_underscore = b == b'_';
+
+        if !(is_upper || is_lower || is_digit || is_underscore) {
+            return Err(ContractError::InvalidXHandle);
+        }
     }
 
     Ok(())

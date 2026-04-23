@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Lock } from 'lucide-react';
-import Input from '@/components/ui/Input';
-import Textarea from '@/components/ui/Textarea';
-import Button from '@/components/ui/Button';
-import TransactionStatus from '@/components/shared/TransactionStatus';
-import { useContract } from '@/hooks';
-import { useToastStore } from '@/store/toastStore';
-import type { Profile } from '@/types/contract';
-import type { ProfileFormData } from '@/types/profile';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Lock } from "lucide-react";
+import Input from "@/components/ui/Input";
+import Textarea from "@/components/ui/Textarea";
+import Button from "@/components/ui/Button";
+import TransactionStatus from "@/components/shared/TransactionStatus";
+import { useContract } from "@/hooks";
+import { useToastStore } from "@/store/toastStore";
+import type { Profile } from "@/types/contract";
+import type { ProfileFormData } from "@/types/profile";
 
-type TxStatus = 'idle' | 'signing' | 'submitting' | 'confirming' | 'success' | 'error';
+type TxStatus =
+  | "idle"
+  | "signing"
+  | "submitting"
+  | "confirming"
+  | "success"
+  | "error";
 
 interface FormErrors {
   displayName?: string;
@@ -23,15 +29,16 @@ function validate(data: ProfileFormData): FormErrors {
   const errors: FormErrors = {};
 
   if (!data.displayName.trim() || data.displayName.length > 64) {
-    errors.displayName = 'Display name is required and must be 1–64 characters.';
+    errors.displayName =
+      "Display name is required and must be 1–64 characters.";
   }
 
   if (data.bio && data.bio.length > 280) {
-    errors.bio = 'Bio must be 280 characters or fewer.';
+    errors.bio = "Bio must be 280 characters or fewer.";
   }
 
   if (data.imageUrl && !isValidUrl(data.imageUrl)) {
-    errors.imageUrl = 'Please enter a valid URL.';
+    errors.imageUrl = "Please enter a valid URL.";
   }
 
   return errors;
@@ -48,9 +55,13 @@ function isValidUrl(url: string): boolean {
 
 interface EditProfileFormProps {
   profile: Profile;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile }) => {
+const EditProfileForm: React.FC<EditProfileFormProps> = ({
+  profile,
+  onDirtyChange,
+}) => {
   const [form, setForm] = useState<ProfileFormData>({
     username: profile.username,
     displayName: profile.displayName,
@@ -59,13 +70,29 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile }) => {
     xHandle: profile.xHandle,
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [txStatus, setTxStatus] = useState<TxStatus>('idle');
+  const [txStatus, setTxStatus] = useState<TxStatus>("idle");
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [txError, setTxError] = useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (uploadedImageUrl) {
+      setForm((prev) => ({ ...prev, imageUrl: uploadedImageUrl }));
+    }
+  }, [uploadedImageUrl]);
 
   const { updateProfile } = useContract();
   const { addToast } = useToastStore();
   const navigate = useNavigate();
+
+  // Track whether any field differs from the original profile
+  useEffect(() => {
+    const isDirty =
+      form.displayName !== profile.displayName ||
+      form.bio !== profile.bio ||
+      form.imageUrl !== profile.imageUrl ||
+      form.xHandle !== profile.xHandle;
+    onDirtyChange?.(isDirty);
+  }, [form, profile, onDirtyChange]);
 
   const handleChange =
     (field: keyof ProfileFormData) =>
@@ -86,7 +113,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile }) => {
     }
 
     try {
-      setTxStatus('signing');
+      setTxStatus("signing");
       setTxError(undefined);
       setTxHash(undefined);
 
@@ -102,39 +129,51 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile }) => {
       if (form.imageUrl.trim() !== profile.imageUrl) {
         data.imageUrl = form.imageUrl.trim();
       }
-      const xHandleFormatted = form.xHandle.trim().replace(/^@/, '');
+      const xHandleFormatted = form.xHandle.trim().replace(/^@/, "");
       if (xHandleFormatted !== profile.xHandle) {
         data.xHandle = xHandleFormatted;
       }
 
       // If no fields changed, show a toast and return
       if (Object.keys(data).length === 0) {
-        addToast({ message: 'No changes to save.', type: 'info', duration: 3000 });
-        setTxStatus('idle');
+        addToast({
+          message: "No changes to save.",
+          type: "info",
+          duration: 3000,
+        });
+        setTxStatus("idle");
         return;
       }
 
-      setTxStatus('submitting');
+      setTxStatus("submitting");
       const hash = await updateProfile(data);
 
-      setTxStatus('confirming');
+      setTxStatus("confirming");
       setTxHash(hash);
 
-      setTxStatus('success');
-      addToast({ message: 'Profile updated successfully!', type: 'success', duration: 5000 });
+      setTxStatus("success");
+      addToast({
+        message: "Profile updated successfully!",
+        type: "success",
+        duration: 5000,
+      });
 
-      setTimeout(() => navigate('/profile'), 1500);
+      setTimeout(() => navigate("/profile"), 1500);
     } catch (err) {
-      setTxStatus('error');
-      setTxError(err instanceof Error ? err.message : 'Update failed. Please try again.');
+      setTxStatus("error");
+      setTxError(
+        err instanceof Error ? err.message : "Update failed. Please try again.",
+      );
     }
   };
 
   const handleCancel = () => {
-    navigate('/profile');
+    navigate("/profile");
   };
 
-  const isSubmitting = ['signing', 'submitting', 'confirming'].includes(txStatus);
+  const isSubmitting = ["signing", "submitting", "confirming"].includes(
+    txStatus,
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-lg mx-auto">
@@ -163,7 +202,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile }) => {
         label="Display Name"
         placeholder="Your Name"
         value={form.displayName}
-        onChange={handleChange('displayName')}
+        onChange={handleChange("displayName")}
         error={errors.displayName}
         disabled={isSubmitting}
         maxLength={64}
@@ -175,7 +214,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile }) => {
         label="Bio"
         placeholder="Tell supporters about yourself…"
         value={form.bio}
-        onChange={handleChange('bio')}
+        onChange={handleChange("bio")}
         error={errors.bio}
         disabled={isSubmitting}
         maxLength={280}
@@ -187,7 +226,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile }) => {
         label="X (Twitter) Handle (optional)"
         placeholder="@yourhandle"
         value={form.xHandle}
-        onChange={handleChange('xHandle')}
+        onChange={handleChange("xHandle")}
         error={errors.xHandle}
         disabled={isSubmitting}
       />
@@ -198,18 +237,18 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile }) => {
         placeholder="https://example.com/avatar.png"
         type="url"
         value={form.imageUrl}
-        onChange={handleChange('imageUrl')}
+        onChange={handleChange("imageUrl")}
         error={errors.imageUrl}
         disabled={isSubmitting}
       />
 
       {/* Transaction status */}
-      {txStatus !== 'idle' && (
+      {txStatus !== "idle" && (
         <TransactionStatus
           status={txStatus}
           txHash={txHash}
           errorMessage={txError}
-          onRetry={() => setTxStatus('idle')}
+          onRetry={() => setTxStatus("idle")}
         />
       )}
 
@@ -228,10 +267,10 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ profile }) => {
           type="submit"
           variant="primary"
           size="lg"
-          disabled={isSubmitting || txStatus === 'success'}
+          disabled={isSubmitting || txStatus === "success"}
           className="flex-1"
         >
-          {isSubmitting ? 'Updating…' : 'Save Changes'}
+          {isSubmitting ? "Updating…" : "Save Changes"}
         </Button>
       </div>
     </form>

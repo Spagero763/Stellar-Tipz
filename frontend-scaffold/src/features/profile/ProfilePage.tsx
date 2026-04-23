@@ -17,6 +17,7 @@ import ProfileStats, { ProfileStatsSkeleton } from "./ProfileStats";
 import ActivityFeed from "./ActivityFeed";
 import RegisterForm from "./RegisterForm";
 import WithdrawModal from "./WithdrawModal";
+import TipQRCode from "./TipQRCode";
 
 /**
  * ProfilePage is a protected route that displays the connected user's profile.
@@ -39,8 +40,8 @@ const ProfilePage: React.FC = () => {
 
   React.useEffect(() => {
     getStats()
-      .then(stats => setFeeBps(stats.feeBps))
-      .catch(err => console.error("Failed to fetch fee bps:", err));
+      .then((stats) => setFeeBps(stats.feeBps))
+      .catch((err) => console.error("Failed to fetch fee bps:", err));
   }, [getStats]);
 
   if (loading) {
@@ -194,6 +195,8 @@ const ProfilePage: React.FC = () => {
 
         {/* Sidebar Actions */}
         <aside className="space-y-6">
+          <TipQRCode username={profile.username} />
+
           <Card
             className="space-y-4 border-4 bg-gray-50 shadow-brutalist"
             padding="lg"

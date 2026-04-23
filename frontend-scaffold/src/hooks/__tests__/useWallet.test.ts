@@ -8,7 +8,7 @@ interface WalletSelectionHandler {
   onWalletSelected: (option: { id: string }) => Promise<void>;
 }
 
-const mockWalletKit = (walletKitModule as any).__mockWalletKit as any;
+const mockWalletKit = (walletKitModule as unknown as { __mockWalletKit: Record<string, import("vitest").Mock> }).__mockWalletKit;
 
 // Mock window.freighter
 Object.defineProperty(window, "freighter", {
@@ -161,6 +161,7 @@ describe("useWallet", () => {
   });
 
   it("should sign transaction", async () => {
+    vi.useFakeTimers();
     const mockXdr = "AAAAAgAAAAA=";
     const mockSignedXdr = "AAAAAwAAAAA=";
 
@@ -185,5 +186,11 @@ describe("useWallet", () => {
     expect(mockWalletKit.signTransaction).toHaveBeenCalledWith(mockXdr, {
       address: "GD1234567890ABCDEF",
     });
+
+    await act(async () => {
+      vi.runAllTimers();
+    });
+    
+    vi.useRealTimers();
   });
 });

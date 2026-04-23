@@ -18,7 +18,7 @@ describe('useTipz', () => {
     mockUseContract.mockReturnValue({
       sendTip: mockContractSendTip,
       withdrawTips: mockContractWithdrawTips,
-    } as any);
+    } as unknown as ReturnType<typeof useContract>);
   });
 
   it('should return initial state', () => {
@@ -63,7 +63,7 @@ describe('useTipz', () => {
     await act(async () => {
       try {
         await result.current.sendTip('creator_address', '1000', 'Great content!');
-      } catch (error) {
+      } catch (_error) {
         // Expected to throw
       }
     });
@@ -105,7 +105,7 @@ describe('useTipz', () => {
     await act(async () => {
       try {
         await result.current.withdrawTips('5000');
-      } catch (error) {
+      } catch (_error) {
         // Expected to throw
       }
     });
@@ -127,7 +127,7 @@ describe('useTipz', () => {
     await act(async () => {
       try {
         await result.current.sendTip('creator_address', '1000', 'Test');
-      } catch (error) {
+      } catch (_error) {
         // Expected to throw
       }
     });
@@ -214,7 +214,7 @@ describe('useTipz', () => {
     await act(async () => {
       try {
         await result.current.sendTip('creator_address', '1000', 'Test');
-      } catch (error) {
+      } catch (_error) {
         // Expected to throw
       }
     });
@@ -235,7 +235,7 @@ describe('useTipz', () => {
     await act(async () => {
       try {
         await result.current.sendTip('creator_address', '1000', 'Test');
-      } catch (error) {
+      } catch (_error) {
         // Expected to throw
       }
     });
