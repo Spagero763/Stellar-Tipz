@@ -35,10 +35,14 @@ pub struct Profile {
     pub username: String,
     /// Display name (1-64 chars)
     pub display_name: String,
-    /// Short bio (0-280 chars)
+    /// Short bio (0-500 chars)
     pub bio: String,
+    /// Website URL (0-200 chars)
+    pub website: String,
     /// Profile image URL or IPFS CID (0-256 chars)
     pub image_url: String,
+    /// Map of social platforms to handles (max 5 links)
+    pub social_links: soroban_sdk::Map<soroban_sdk::Symbol, String>,
     /// X (Twitter) handle (0-32 chars)
     pub x_handle: String,
     /// X follower count (set by admin)
@@ -59,6 +63,38 @@ pub struct Profile {
     pub updated_at: u64,
     /// Verification status
     pub verification: VerificationStatus,
+}
+
+/// Recurring tip subscription record.
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct Subscription {
+    /// Address of the supporter
+    pub subscriber: Address,
+    /// Address of the creator
+    pub creator: Address,
+    /// Amount to tip per interval
+    pub amount: i128,
+    /// Interval in days
+    pub interval_days: u32,
+    /// Timestamp of next execution
+    pub next_due: u64,
+    /// Whether the subscription is currently active
+    pub active: bool,
+}
+
+/// Pending withdrawal for security cooldown.
+#[contracttype]
+#[derive(Clone, Debug, PartialEq)]
+pub struct PendingWithdrawal {
+    /// Unique withdrawal ID
+    pub id: u32,
+    /// Creator address
+    pub creator: Address,
+    /// Amount to withdraw
+    pub amount: i128,
+    /// Execution timestamp (after cooldown)
+    pub unlock_at: u64,
 }
 
 /// Individual tip record stored in temporary storage with a TTL of ~7 days.

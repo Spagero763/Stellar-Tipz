@@ -227,3 +227,81 @@ pub fn emit_verification_revoked(env: &Env, creator: &Address) {
         (creator.clone(),),
     );
 }
+
+// ── Subscription events ──────────────────────────────────────────────────────
+
+/// Topics : `("sub", "created")`
+pub fn emit_subscription_created(env: &Env, subscriber: &Address, creator: &Address, amount: i128, interval_days: u32) {
+    env.events().publish(
+        (symbol_short!("sub"), symbol_short!("created")),
+        (subscriber.clone(), creator.clone(), amount, interval_days),
+    );
+}
+
+/// Topics : `("sub", "cancel")`
+pub fn emit_subscription_cancelled(env: &Env, subscriber: &Address, creator: &Address) {
+    env.events().publish(
+        (symbol_short!("sub"), symbol_short!("cancel")),
+        (subscriber.clone(), creator.clone()),
+    );
+}
+
+/// Topics : `("sub", "exec")`
+pub fn emit_subscription_executed(env: &Env, subscriber: &Address, creator: &Address, amount: i128) {
+    env.events().publish(
+        (symbol_short!("sub"), symbol_short!("exec")),
+        (subscriber.clone(), creator.clone(), amount),
+    );
+}
+
+// ── Withdrawal Scheduling events ─────────────────────────────────────────────
+
+/// Topics : `("wd", "sched")`
+pub fn emit_withdrawal_scheduled(env: &Env, creator: &Address, id: u32, amount: i128, unlock_at: u64) {
+    env.events().publish(
+        (symbol_short!("wd"), symbol_short!("sched")),
+        (creator.clone(), id, amount, unlock_at),
+    );
+}
+
+/// Topics : `("wd", "exec")`
+pub fn emit_withdrawal_executed(env: &Env, creator: &Address, id: u32, amount: i128) {
+    env.events().publish(
+        (symbol_short!("wd"), symbol_short!("exec")),
+        (creator.clone(), id, amount),
+    );
+}
+
+/// Topics : `("wd", "cancel")`
+pub fn emit_withdrawal_cancelled(env: &Env, creator: &Address, id: u32) {
+    env.events().publish(
+        (symbol_short!("wd"), symbol_short!("cancel")),
+        (creator.clone(), id),
+    );
+}
+
+// ── Fee Distribution events ──────────────────────────────────────────────────
+
+/// Topics : `("fee", "split")`
+pub fn emit_fee_split_updated(env: &Env, ops_pct: u32, pool_pct: u32) {
+    env.events().publish(
+        (symbol_short!("fee"), symbol_short!("split")),
+        (ops_pct, pool_pct),
+    );
+}
+
+/// Topics : `("fee", "dist")`
+pub fn emit_fee_distributed(env: &Env, amount: i128, to_ops: bool) {
+    env.events().publish(
+        (symbol_short!("fee"), symbol_short!("dist")),
+        (amount, to_ops),
+    );
+}
+
+/// Topics : `("pool", "dist")`
+pub fn emit_pool_distribution(env: &Env, total_amount: i128, recipient_count: u32) {
+    env.events().publish(
+        (symbol_short!("pool"), symbol_short!("dist")),
+        (total_amount, recipient_count),
+    );
+}

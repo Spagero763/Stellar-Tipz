@@ -88,6 +88,30 @@ pub enum DataKey {
     VerificationStatus(Address),
     /// Pending verification request by creator address
     VerificationRequest(Address),
+    /// Subscription by (subscriber, creator)
+    Subscription(Address, Address),
+    /// Number of subscriptions for a subscriber
+    SubscriberSubCount(Address),
+    /// Index: (subscriber, index) -> creator
+    SubscriberSub(Address, u32),
+    /// Number of subscribers for a creator
+    CreatorSubCount(Address),
+    /// Index: (creator, index) -> subscriber
+    CreatorSub(Address, u32),
+    /// Pending withdrawal by (creator, withdrawal_id)
+    PendingWithdrawal(Address, u32),
+    /// Next withdrawal ID for a creator
+    NextWithdrawalId(Address),
+    /// Withdrawal cooldown in seconds
+    WithdrawalCooldown,
+    /// Large withdrawal threshold in stroops
+    WithdrawalThreshold,
+    /// Percentage of fees going to operations
+    OpsFeePct,
+    /// Percentage of fees going to staking pool
+    PoolFeePct,
+    /// Current pool balance
+    PoolBalance,
 }
 
 /// Extend the contract instance TTL when a write transaction starts.
