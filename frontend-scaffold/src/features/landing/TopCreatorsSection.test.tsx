@@ -9,6 +9,12 @@ vi.mock("@/hooks", () => ({
   useContract: vi.fn(),
 }));
 
+vi.mock("@/helpers/env", () => ({
+  env: {
+    contractId: "C1234567890ABCDEF",
+  },
+}));
+
 const mockNavigate = vi.fn();
 vi.mock("react-router-dom", async () => {
   const actual = await vi.importActual("react-router-dom");

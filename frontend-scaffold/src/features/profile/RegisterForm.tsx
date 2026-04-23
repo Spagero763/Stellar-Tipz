@@ -49,7 +49,11 @@ function validate(data: ProfileFormData, available: boolean | null, checking: bo
   return errors;
 }
 
-const RegisterForm: React.FC = () => {
+interface RegisterFormProps {
+  initialImageUrl?: string;
+}
+
+const RegisterForm: React.FC<RegisterFormProps> = ({ initialImageUrl }) => {
   const [form, setForm] = useState<ProfileFormData>({
     username: '',
     displayName: '',
@@ -61,6 +65,12 @@ const RegisterForm: React.FC = () => {
   const [txStatus, setTxStatus] = useState<TxStatus>('idle');
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [txError, setTxError] = useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (initialImageUrl) {
+      setForm((prev) => ({ ...prev, imageUrl: initialImageUrl }));
+    }
+  }, [initialImageUrl]);
 
   const { registerProfile } = useContract();
   const { addToast } = useToastStore();

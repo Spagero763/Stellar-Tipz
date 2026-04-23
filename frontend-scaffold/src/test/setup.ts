@@ -48,3 +48,14 @@ vi.mock("@creit.tech/stellar-wallets-kit", () => ({
   xBullModule: vi.fn(function MockXBullModule() {}),
   __mockWalletKit: mockWalletKit,
 }));
+
+vi.mock("@stellar/stellar-sdk", () => ({
+  Contract: vi.fn(),
+  TimeoutInfinite: 0,
+  nativeToScVal: vi.fn(),
+  xdr: {},
+  Networks: {
+    TESTNET: "Test SDF Network ; September 2015",
+    PUBLIC: "Public Global Stellar Network ; September 2015",
+  },
+}));

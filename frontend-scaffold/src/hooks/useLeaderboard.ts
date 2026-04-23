@@ -57,7 +57,7 @@ export const useLeaderboard = (): LeaderboardData => {
       }
 
       // Validate entries have required fields
-      if (!parsed.entries.every((entry: any) =>
+      if (!parsed.entries.every((entry: Record<string, unknown>) =>
         entry &&
         typeof entry.address === 'string' &&
         typeof entry.username === 'string' &&

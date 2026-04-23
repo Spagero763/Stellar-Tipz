@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Coins } from "lucide-react";
 
-import { stroopToXlm, stroopToXlmBigNumber, formatTimestamp } from "../../helpers/format";
+import { stroopToXlmBigNumber, formatTimestamp } from "../../helpers/format";
 import { Tip } from "../../types/contract";
 
 type Period = "week" | "month" | "all";

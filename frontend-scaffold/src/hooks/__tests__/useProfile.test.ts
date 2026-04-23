@@ -48,7 +48,7 @@ describe('useProfile', () => {
     mockGetProfile.mockClear();
     mockUseContract.mockReturnValue({
       getProfile: mockGetProfile,
-    } as any);
+    } as unknown as ReturnType<typeof useContract>);
   });
 
   it('should return initial profile state', () => {
