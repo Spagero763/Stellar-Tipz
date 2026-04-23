@@ -66,7 +66,9 @@ describe("useWallet", () => {
       ({ onWalletSelected }: WalletSelectionHandler) => {
         mockOnWalletSelected.mockImplementation(
           async (option: { id: string }) => {
-            mockWalletKit.setWallet(option.id);
+            (mockWalletKit.setWallet as unknown as (id: string) => void)(
+              option.id,
+            );
             mockWalletKit.getAddress.mockResolvedValue({
               address: mockAddress,
             });
@@ -128,7 +130,9 @@ describe("useWallet", () => {
       ({ onWalletSelected }: WalletSelectionHandler) => {
         mockOnWalletSelected.mockImplementation(
           async (option: { id: string }) => {
-            mockWalletKit.setWallet(option.id);
+            (mockWalletKit.setWallet as unknown as (id: string) => void)(
+              option.id,
+            );
             mockWalletKit.getAddress.mockRejectedValue(
               new Error("Connection failed"),
             );

@@ -886,13 +886,20 @@ mod tests {
 // Verification storage functions
 // ──────────────────────────────────────────────────────────────────────────────
 
-pub fn get_verification_status(env: &Env, address: &Address) -> Option<crate::types::VerificationStatus> {
+pub fn get_verification_status(
+    env: &Env,
+    address: &Address,
+) -> Option<crate::types::VerificationStatus> {
     env.storage()
         .persistent()
         .get(&DataKey::VerificationStatus(address.clone()))
 }
 
-pub fn set_verification_status(env: &Env, address: &Address, status: &crate::types::VerificationStatus) {
+pub fn set_verification_status(
+    env: &Env,
+    address: &Address,
+    status: &crate::types::VerificationStatus,
+) {
     env.storage()
         .persistent()
         .set(&DataKey::VerificationStatus(address.clone()), status);
@@ -905,16 +912,24 @@ pub fn remove_verification_status(env: &Env, address: &Address) {
         .remove(&DataKey::VerificationStatus(address.clone()));
 }
 
-pub fn get_verification_request(env: &Env, address: &Address) -> Option<crate::types::VerificationType> {
+pub fn get_verification_request(
+    env: &Env,
+    address: &Address,
+) -> Option<crate::types::VerificationType> {
     env.storage()
         .persistent()
         .get(&DataKey::VerificationRequest(address.clone()))
 }
 
-pub fn set_verification_request(env: &Env, address: &Address, verification_type: &crate::types::VerificationType) {
-    env.storage()
-        .persistent()
-        .set(&DataKey::VerificationRequest(address.clone()), verification_type);
+pub fn set_verification_request(
+    env: &Env,
+    address: &Address,
+    verification_type: &crate::types::VerificationType,
+) {
+    env.storage().persistent().set(
+        &DataKey::VerificationRequest(address.clone()),
+        verification_type,
+    );
     bump_profile_ttl(env, address);
 }
 

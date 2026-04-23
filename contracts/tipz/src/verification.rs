@@ -127,7 +127,10 @@ pub fn revoke_verification(env: &Env, creator: Address) -> Result<(), ContractEr
 }
 
 /// Get verification status for a creator.
-pub fn get_verification_status(env: &Env, creator: Address) -> Result<VerificationStatus, ContractError> {
+pub fn get_verification_status(
+    env: &Env,
+    creator: Address,
+) -> Result<VerificationStatus, ContractError> {
     if !storage::has_profile(env, &creator) {
         return Err(ContractError::NotRegistered);
     }

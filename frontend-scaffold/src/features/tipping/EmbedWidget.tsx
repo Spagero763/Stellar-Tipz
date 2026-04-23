@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HeartHandshake, ExternalLink } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useSearchParams } from 'react-router-dom';
 
 import Avatar from '../../components/ui/Avatar';
@@ -24,21 +23,47 @@ const EmbedWidget: React.FC<EmbedWidgetProps> = ({
   const username = propUsername || searchParams.get('username') || '';
   const theme = propTheme || (searchParams.get('theme') as 'light' | 'dark') || 'light';
   const presets = propPresets || searchParams.get('presets')?.split(',') || ['5', '10', '20'];
+  const normalizedUsername = username.trim();
 
   const { getProfileByUsername } = useContract();
   const [creator, setCreator] = useState<Profile | null>(null);
+  const [resolvedUsername, setResolvedUsername] = useState('');
   const [amount, setAmount] = useState(presets[0]);
-  const [loading, setLoading] = useState(true);
+  const loading = Boolean(normalizedUsername) && resolvedUsername !== normalizedUsername;
 
   useEffect(() => {
-    if (username) {
-      setLoading(true);
-      getProfileByUsername(username)
-        .then(setCreator)
-        .catch(console.error)
-        .finally(() => setLoading(false));
+    if (!normalizedUsername) {
+      return;
     }
-  }, [username, getProfileByUsername]);
+
+    let cancelled = false;
+
+    getProfileByUsername(normalizedUsername)
+      .then((profile) => {
+        if (cancelled) {
+          return;
+        }
+
+        setCreator(profile);
+        setResolvedUsername(normalizedUsername);
+      })
+      .catch((error) => {
+        if (cancelled) {
+          return;
+        }
+
+        console.error(error);
+        setCreator(null);
+        setResolvedUsername(normalizedUsername);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [normalizedUsername, getProfileByUsername]);
+
+  const resolvedCreator =
+    resolvedUsername === normalizedUsername ? creator : null;
 
   const handleTip = () => {
     const url = `https://tipz.app/@${username}?amount=${amount}`;
@@ -53,7 +78,7 @@ const EmbedWidget: React.FC<EmbedWidgetProps> = ({
     );
   }
 
-  if (!creator) {
+  if (!resolvedCreator) {
     return (
       <div className={`w-full h-full flex items-center justify-center p-4 text-center ${theme === 'dark' ? 'bg-black text-white' : 'bg-white text-black'}`}>
         <p className="font-bold">Creator not found</p>
@@ -65,16 +90,16 @@ const EmbedWidget: React.FC<EmbedWidgetProps> = ({
     <div className={`w-full h-full p-4 overflow-hidden flex flex-col ${theme === 'dark' ? 'dark bg-black text-white' : 'bg-white text-black'}`}>
       <Card className="flex-1 flex flex-col items-center justify-center text-center gap-4 border-2 border-current shadow-brutalist bg-transparent">
         <Avatar
-          address={creator.owner}
-          alt={creator.displayName}
-          fallback={creator.displayName}
+          address={resolvedCreator.owner}
+          alt={resolvedCreator.displayName}
+          fallback={resolvedCreator.displayName}
           size="xl"
           className="border-2 border-current"
         />
         
         <div>
-          <h3 className="font-black uppercase text-lg leading-tight">{creator.displayName}</h3>
-          <p className="text-xs font-bold opacity-70">@{creator.username}</p>
+          <h3 className="font-black uppercase text-lg leading-tight">{resolvedCreator.displayName}</h3>
+          <p className="text-xs font-bold opacity-70">@{resolvedCreator.username}</p>
         </div>
 
         <div className="w-full space-y-3 mt-2">

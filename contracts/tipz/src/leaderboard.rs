@@ -733,7 +733,11 @@ mod tests {
 
             let entries = load_entries(&env);
             assert_eq!(entries.len(), 3);
-            assert_eq!(entries.get(0).unwrap().address, addr_a, "first-in keeps rank 1");
+            assert_eq!(
+                entries.get(0).unwrap().address,
+                addr_a,
+                "first-in keeps rank 1"
+            );
             assert_eq!(entries.get(1).unwrap().address, addr_b);
             assert_eq!(entries.get(2).unwrap().address, addr_c);
         });

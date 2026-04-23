@@ -8,6 +8,7 @@ interface AvatarProps {
   size?: AvatarSize;
   address?: string;
   fallback?: string;
+  className?: string;
 }
 
 const sizeClasses: Record<AvatarSize, string> = {
@@ -61,6 +62,7 @@ const Avatar: React.FC<AvatarProps> = ({
   size = 'md',
   address,
   fallback,
+  className = '',
 }) => {
   const [imageError, setImageError] = useState(false);
   
@@ -77,7 +79,7 @@ const Avatar: React.FC<AvatarProps> = ({
 
   return (
     <div
-      className={`${sizeClasses[size]} border-2 border-black overflow-hidden flex items-center justify-center font-bold text-white`}
+      className={`${sizeClasses[size]} border-2 border-black overflow-hidden flex items-center justify-center font-bold text-white ${className}`}
       title={alt}
     >
       {showImage ? (

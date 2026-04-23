@@ -1,7 +1,7 @@
 #![cfg(test)]
 
-use soroban_sdk::{testutils::Address as _, Address, String};
 use crate::test::test_profiles::setup;
+use soroban_sdk::{testutils::Address as _, Address, String};
 
 #[test]
 fn test_x_handle_normalization_register() {

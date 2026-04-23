@@ -203,7 +203,11 @@ pub fn emit_x_metrics_batch_completed(
 
 /// Topics : `("verification", "requested")`
 /// Data   : `(creator: Address, verification_type: VerificationType)`
-pub fn emit_verification_requested(env: &Env, creator: &Address, verification_type: &crate::types::VerificationType) {
+pub fn emit_verification_requested(
+    env: &Env,
+    creator: &Address,
+    verification_type: &crate::types::VerificationType,
+) {
     env.events().publish(
         (symbol_short!("verification"), symbol_short!("requested")),
         (creator.clone(), verification_type.clone()),
@@ -212,7 +216,11 @@ pub fn emit_verification_requested(env: &Env, creator: &Address, verification_ty
 
 /// Topics : `("verification", "approved")`
 /// Data   : `(creator: Address, verification_type: VerificationType)`
-pub fn emit_verification_approved(env: &Env, creator: &Address, verification_type: &crate::types::VerificationType) {
+pub fn emit_verification_approved(
+    env: &Env,
+    creator: &Address,
+    verification_type: &crate::types::VerificationType,
+) {
     env.events().publish(
         (symbol_short!("verification"), symbol_short!("approved")),
         (creator.clone(), verification_type.clone()),
