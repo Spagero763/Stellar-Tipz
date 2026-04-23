@@ -107,7 +107,7 @@ export const useDashboard = (): DashboardData => {
         const err = statsResult.reason;
         console.error('Failed to fetch stats:', err);
         addToast({ 
-          message: categorizeError(err) === 'network' ? ERRORS.NETWORK : 'Could not fetch latest platform stats.', 
+          message: categorizeError(err).category === 'network' ? ERRORS.NETWORK : 'Could not fetch latest platform stats.', 
           type: 'error' 
         });
       }

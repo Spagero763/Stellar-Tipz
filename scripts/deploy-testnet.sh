@@ -111,6 +111,8 @@ curl -s "https://friendbot.stellar.org?addr=$DEPLOYER_ADDR" > /dev/null
 echo "Account funded."
 echo ""
 
+echo "Using Wasm: $WASM_PATH"
+
 # Deploy
 echo "Deploying to testnet..."
 CONTRACT_ID=$(soroban contract deploy \

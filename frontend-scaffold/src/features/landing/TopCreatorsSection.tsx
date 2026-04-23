@@ -20,6 +20,28 @@ export default function TopCreatorsSection() {
   const { getLeaderboard } = useContract();
   const navigate = useNavigate();
 
+  const fetchCreators = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    // Use mock data when flag is set or contract is not configured
+    if (env.useMockData || !env.contractId) {
+      setCreators(env.useMockData ? mockLeaderboard.slice(0, 5) : []);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const data = await getLeaderboard(5);
+      setCreators(data);
+    } catch (err) {
+      console.error('Failed to fetch leaderboard:', err);
+      setError(String(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [getLeaderboard]);
+
   useEffect(() => {
     if (
       !env.contractId &&

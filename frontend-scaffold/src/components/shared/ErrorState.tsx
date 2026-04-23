@@ -49,6 +49,18 @@ const ErrorState: React.FC<ErrorStateProps> = ({
           title: "Something went wrong",
           defaultMessage: ERRORS.CONTRACT,
         };
+      case "timeout":
+        return {
+          icon: <AlertCircle className="text-yellow-600" size={48} />,
+          title: "Request Timed Out",
+          defaultMessage: "The request timed out. Please try again.",
+        };
+      case "validation":
+        return {
+          icon: <AlertCircle className="text-orange-500" size={48} />,
+          title: "Invalid Input",
+          defaultMessage: "Please check your input and try again.",
+        };
       case "unknown":
       default:
         return {

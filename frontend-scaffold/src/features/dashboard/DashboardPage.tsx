@@ -88,7 +88,7 @@ const DashboardPage: React.FC = () => {
   if (error && !profile) {
     return (
       <PageContainer maxWidth="xl" className="py-20">
-        <ErrorState category={categorizeError(error)} onRetry={refetch} />
+        <ErrorState category={categorizeError(error).category} onRetry={refetch} />
       </PageContainer>
     );
   }

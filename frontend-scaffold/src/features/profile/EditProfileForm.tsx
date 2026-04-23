@@ -74,12 +74,6 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({
   const [txHash, setTxHash] = useState<string | undefined>(undefined);
   const [txError, setTxError] = useState<string | undefined>(undefined);
 
-  React.useEffect(() => {
-    if (uploadedImageUrl) {
-      setForm((prev) => ({ ...prev, imageUrl: uploadedImageUrl }));
-    }
-  }, [uploadedImageUrl]);
-
   const { updateProfile } = useContract();
   const { addToast } = useToastStore();
   const navigate = useNavigate();

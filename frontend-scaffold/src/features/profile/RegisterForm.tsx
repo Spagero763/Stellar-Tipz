@@ -122,7 +122,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ initialImageUrl }) => {
 
       setTimeout(() => navigate('/profile'), 1500);
     } catch (err) {
-      const category = categorizeError(err);
+      const { category } = categorizeError(err);
       setTxStatus('error');
       setTxError(category === 'network' ? ERRORS.NETWORK : ERRORS.CONTRACT);
     }

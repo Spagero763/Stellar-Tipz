@@ -67,7 +67,8 @@ const DashboardSkeleton: React.FC = () => {
               <Skeleton width="120px" height="10px" />
               <Skeleton width="100px" height="20px" />
             </div>
-            <Skeleton lines={2} />
+            <Skeleton width="100%" height="14px" />
+              <Skeleton width="90%" height="14px" className="mt-2" />
           </Card>
 
           <Card className="space-y-4" padding="lg">

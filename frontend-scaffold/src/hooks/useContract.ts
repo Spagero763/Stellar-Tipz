@@ -30,6 +30,14 @@ import { ProfileFormData } from "../types/profile";
 import { xlmToStroop } from "../helpers/format";
 
 /**
+ * Valid Stellar placeholder address used as the source account for
+ * read-only (simulation-only) contract calls when no wallet is connected.
+ * This is the well-known zero-account on Stellar.
+ */
+const READ_ONLY_SOURCE =
+  "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF";
+
+/**
  * Safely converts a numeric string to a BigInt.
  * Validates that the input is a non-empty string of digits.
  * @param amount The string to convert.
@@ -96,8 +104,7 @@ export const useContract = () => {
     async (username: string): Promise<Profile> => {
       const contract = new Contract(contractId);
       const txBuilder = await getTxBuilder(
-        wallet.publicKey ||
-          "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        wallet.publicKey || READ_ONLY_SOURCE,
         BASE_FEE,
         server,
         networkDetails.networkPassphrase,
@@ -118,8 +125,7 @@ export const useContract = () => {
     async (limit: number): Promise<LeaderboardEntry[]> => {
       const contract = new Contract(contractId);
       const txBuilder = await getTxBuilder(
-        wallet.publicKey ||
-          "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        wallet.publicKey || READ_ONLY_SOURCE,
         BASE_FEE,
         server,
         networkDetails.networkPassphrase,
@@ -145,8 +151,7 @@ export const useContract = () => {
     }
     const contract = new Contract(contractId);
     const txBuilder = await getTxBuilder(
-      wallet.publicKey ||
-        "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+      wallet.publicKey || READ_ONLY_SOURCE,
       BASE_FEE,
       server,
       networkDetails.networkPassphrase,
@@ -170,8 +175,7 @@ export const useContract = () => {
     try {
       const contract = new Contract(contractId);
       const txBuilder = await getTxBuilder(
-        wallet.publicKey ||
-          "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        wallet.publicKey || READ_ONLY_SOURCE,
         BASE_FEE,
         server,
         networkDetails.networkPassphrase,
@@ -193,8 +197,7 @@ export const useContract = () => {
     async (creator: string, limit: number, offset: number): Promise<Tip[]> => {
       const contract = new Contract(contractId);
       const txBuilder = await getTxBuilder(
-        wallet.publicKey ||
-          "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        wallet.publicKey || READ_ONLY_SOURCE,
         BASE_FEE,
         server,
         networkDetails.networkPassphrase,
@@ -220,8 +223,7 @@ export const useContract = () => {
     async (creator: string): Promise<number> => {
       const contract = new Contract(contractId);
       const txBuilder = await getTxBuilder(
-        wallet.publicKey ||
-          "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        wallet.publicKey || READ_ONLY_SOURCE,
         BASE_FEE,
         server,
         networkDetails.networkPassphrase,
@@ -242,8 +244,7 @@ export const useContract = () => {
     async (tipper: string, limit: number): Promise<Tip[]> => {
       const contract = new Contract(contractId);
       const txBuilder = await getTxBuilder(
-        wallet.publicKey ||
-          "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        wallet.publicKey || READ_ONLY_SOURCE,
         BASE_FEE,
         server,
         networkDetails.networkPassphrase,
@@ -268,8 +269,7 @@ export const useContract = () => {
     async (tipper: string): Promise<number> => {
       const contract = new Contract(contractId);
       const txBuilder = await getTxBuilder(
-        wallet.publicKey ||
-          "GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF",
+        wallet.publicKey || READ_ONLY_SOURCE,
         BASE_FEE,
         server,
         networkDetails.networkPassphrase,

@@ -48,7 +48,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
         return this.props.fallback;
       }
 
-      const category = categorizeError(this.state.error);
+      const { category } = categorizeError(this.state.error);
 
       return (
         <div className="min-h-[400px] flex items-center justify-center">

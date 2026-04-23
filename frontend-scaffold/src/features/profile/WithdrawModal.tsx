@@ -194,7 +194,7 @@ const WithdrawModal: React.FC<WithdrawModalProps> = ({
             txHash={txHash ?? undefined}
             errorMessage={
               error
-                ? categorizeError(error) === "network"
+                ? categorizeError(error).category === "network"
                   ? ERRORS.NETWORK
                   : ERRORS.CONTRACT
                 : undefined

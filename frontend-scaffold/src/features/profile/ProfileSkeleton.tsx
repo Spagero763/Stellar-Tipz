@@ -25,7 +25,9 @@ const ProfileSkeleton: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            <Skeleton lines={3} />
+            <Skeleton width="100%" height="14px" />
+            <Skeleton width="95%" height="14px" />
+            <Skeleton width="85%" height="14px" />
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
@@ -49,7 +51,8 @@ const ProfileSkeleton: React.FC = () => {
           <Skeleton height="45px" />
           <Skeleton height="45px" />
           <div className="space-y-2">
-            <Skeleton lines={2} />
+            <Skeleton width="100%" height="14px" />
+            <Skeleton width="90%" height="14px" />
           </div>
         </Card>
       </section>

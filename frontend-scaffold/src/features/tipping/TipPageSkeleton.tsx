@@ -21,7 +21,11 @@ const TipPageSkeleton: React.FC = () => {
             </div>
             <Skeleton width="60px" height="30px" />
           </div>
-          <Skeleton lines={3} />
+          <div className="space-y-2">
+            <Skeleton width="100%" height="14px" />
+            <Skeleton width="95%" height="14px" />
+            <Skeleton width="85%" height="14px" />
+          </div>
           <div className="grid gap-4 sm:grid-cols-3">
             <Skeleton height="80px" />
             <Skeleton height="80px" />
@@ -51,7 +55,11 @@ const TipPageSkeleton: React.FC = () => {
       <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
         <Card className="space-y-4">
           <Skeleton width="200px" height="20px" />
-          <Skeleton lines={3} />
+          <div className="space-y-2">
+            <Skeleton width="100%" height="14px" />
+            <Skeleton width="90%" height="14px" />
+            <Skeleton width="80%" height="14px" />
+          </div>
           <Skeleton width="150px" height="12px" />
         </Card>
         

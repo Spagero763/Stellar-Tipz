@@ -53,7 +53,7 @@ const StatsSection: React.FC = () => {
         console.warn('[StatsSection] Could not fetch live platform stats:', err);
         const { addToast } = useToastStore.getState();
         addToast({
-          message: categorizeError(err) === 'network' ? ERRORS.NETWORK : 'Could not fetch live platform stats.',
+          message: categorizeError(err).category === 'network' ? ERRORS.NETWORK : 'Could not fetch live platform stats.',
           type: 'error',
         });
       });

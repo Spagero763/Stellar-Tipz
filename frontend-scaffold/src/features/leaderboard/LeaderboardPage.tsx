@@ -10,9 +10,9 @@ import Card from "../../components/ui/Card";
 import Pagination from "../../components/ui/Pagination";
 import ErrorState from "../../components/shared/ErrorState";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import type { LeaderboardEntry } from "@/types";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
 import { categorizeError } from "@/helpers/error";
+import LeaderboardSkeleton from "./LeaderboardSkeleton";
 
 
 const PAGE_SIZE = 5;
@@ -24,14 +24,14 @@ const LeaderboardPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const totalPages = Math.ceil(entries.length / PAGE_SIZE);
 
-  if (loading && entries.length === 0 && !error) {
-    return <LeaderboardSkeleton count={PAGE_SIZE} />;
-  }
-
   const visibleEntries = useMemo(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE;
     return entries.slice(startIndex, startIndex + PAGE_SIZE);
   }, [entries, currentPage]);
+
+  if (loading && entries.length === 0 && !error) {
+    return <LeaderboardSkeleton count={PAGE_SIZE} />;
+  }
 
   return (
     <PageContainer maxWidth="xl" className="space-y-8 py-10">
@@ -52,7 +52,7 @@ const LeaderboardPage: React.FC = () => {
         <div className="grid gap-4 sm:grid-cols-3">
           {error ? (
             <div className="sm:col-span-3">
-              <ErrorState category={categorizeError(error)} onRetry={refetch} />
+              <ErrorState category={categorizeError(error).category} onRetry={refetch} />
             </div>
           ) : (
             entries.slice(0, 3).map((entry, index) => {
