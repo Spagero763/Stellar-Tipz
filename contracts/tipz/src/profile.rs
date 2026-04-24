@@ -57,7 +57,7 @@ pub fn register_profile(
     validation::validate_bio(&bio)?;
     validation::validate_image_url(&image_url)?;
     // x_handle is optional: only validate and normalize if non-empty.
-    let normalized_x = if x_handle.len() > 0 {
+    let normalized_x = if !x_handle.is_empty() {
         validation::validate_x_handle(&x_handle)?;
         // Normalize: prepend @ if missing.
         let mut handle_buf = [0u8; 16];
@@ -267,7 +267,6 @@ pub fn deregister_profile(env: &Env, caller: Address) -> Result<(), ContractErro
     Ok(())
 }
 
-
 /// Set a custom donation page configuration for a creator
 pub fn set_donation_page(
     env: &Env,
@@ -296,7 +295,7 @@ pub fn set_donation_page(
     }
 
     // Validate theme color format (basic check for hex color)
-    if config.theme_color.len() > 0 && config.theme_color.len() != 7 {
+    if !config.theme_color.is_empty() && config.theme_color.len() != 7 {
         return Err(ContractError::InvalidAmount); // Reusing error for invalid format
     }
 

@@ -97,10 +97,10 @@ pub fn get_creator_stats(env: &Env, creator: &Address) -> Result<CreatorStats, C
 /// Update 24-hour statistics when a tip is sent
 pub fn update_24h_stats(env: &Env, amount: i128) {
     let now = env.ledger().timestamp();
-    
+
     // Get current 24h window start
     let window_start = storage::get_stats_window_start(env);
-    
+
     // If more than 24 hours have passed, reset the window
     if now - window_start > 86400 {
         storage::set_stats_window_start(env, now);
@@ -119,7 +119,7 @@ pub fn update_24h_stats(env: &Env, amount: i128) {
 pub fn mark_creator_active(env: &Env, creator: &Address) {
     let now = env.ledger().timestamp();
     storage::set_creator_last_active(env, creator, now);
-    
+
     // Update active creators count for 30d window
     update_active_creators_count(env);
 }

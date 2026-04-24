@@ -49,6 +49,7 @@ pub fn emit_profile_deregistered(env: &Env, owner: &Address, username: &String) 
 /// All tip fields are included so that off-chain indexers can reconstruct the
 /// complete tip history from events alone, without relying on temporary storage
 /// which expires after ~7 days.
+#[allow(clippy::too_many_arguments)]
 pub fn emit_tip_sent(
     env: &Env,
     tip_id: u32,
@@ -338,7 +339,6 @@ pub fn emit_pool_distribution(env: &Env, total_amount: i128, recipient_count: u3
         (total_amount, recipient_count),
     );
 }
-
 
 // ── Multi-sig events ──────────────────────────────────────────────────────────
 
