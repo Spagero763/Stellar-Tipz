@@ -8,3 +8,4 @@ export * from './usePageTitle';
 export * from './useBalance';
 export * from './useSearch';
 export * from './useRealTimeNotifications';
+export * from './useOfflineStatus';

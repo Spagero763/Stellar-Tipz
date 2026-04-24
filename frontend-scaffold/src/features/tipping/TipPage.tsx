@@ -197,7 +197,25 @@ const TipPage: React.FC = () => {
             </div>
           )}
 
-          {step === "success" || step === "error" ? (
+          {step === "queued" ? (
+            <div
+              role="status"
+              aria-live="polite"
+              className="border-2 border-black bg-yellow-100 p-5 space-y-3"
+            >
+              <p className="text-xl font-black uppercase">Tip queued</p>
+              <p className="text-sm font-bold text-gray-700">
+                You are offline. Your tip will be sent when online automatically.
+              </p>
+              <button
+                type="button"
+                className="border-2 border-black bg-black px-4 py-2 text-xs font-black uppercase text-white"
+                onClick={reset}
+              >
+                Send another
+              </button>
+            </div>
+          ) : step === "success" || step === "error" ? (
             <TipResult
               status={step === "success" ? "success" : "error"}
               txHash={txHash ?? undefined}
