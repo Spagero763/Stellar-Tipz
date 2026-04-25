@@ -220,6 +220,8 @@ pub fn get_profile_with_deactivation(
         return Err(ContractError::NotRegistered);
     }
     let profile = storage::get_profile(env, address);
+    storage::bump_profile_ttl(env, address);
+    storage::bump_username_ttl(env, &profile.username);
     let deactivated_at = storage::get_profile_deactivated_at(env, address);
     let is_deactivated = deactivated_at.is_some();
     Ok(ProfileWithDeactivation {
