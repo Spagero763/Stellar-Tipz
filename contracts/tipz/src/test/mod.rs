@@ -28,3 +28,4 @@ mod test_validation;
 mod test_versioning;
 mod test_withdraw;
 mod test_x_handle;
+mod test_security;

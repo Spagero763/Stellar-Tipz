@@ -30,6 +30,7 @@ import {
 import { ProfileFormData } from "../types/profile";
 import { xlmToStroop } from "../helpers/format";
 import { contractQueryCache, buildContractCacheKey } from "../services/cache";
+import { validateTransaction } from "../services/transactionValidator";
 
 /**
  * Valid Stellar placeholder address used as the source account for
@@ -416,7 +417,27 @@ export const useContract = () => {
         .build();
 
       const xdr = tx.toXDR();
+      
+      // Validate before signing (sanity check)
+      const preValidation = validateTransaction(xdr, {
+        expectedContractId: contractId,
+        expectedFunction: "register_profile",
+        expectedArgs: { username: data.username, displayName: data.displayName, bio: data.bio, imageUrl: data.imageUrl, xHandle: data.xHandle },
+        networkPassphrase: networkDetails.networkPassphrase
+      });
+      if (!preValidation.isValid) throw new Error(`Invalid transaction built: ${preValidation.errors.join(", ")}`);
+
       const signedXdr = await wallet.signTransaction(xdr);
+      
+      // Validate after signing (security check)
+      const postValidation = validateTransaction(signedXdr, {
+        expectedContractId: contractId,
+        expectedFunction: "register_profile",
+        expectedArgs: { username: data.username, displayName: data.displayName, bio: data.bio, imageUrl: data.imageUrl, xHandle: data.xHandle },
+        networkPassphrase: networkDetails.networkPassphrase
+      });
+      if (!postValidation.isValid) throw new Error(`Transaction modification detected: ${postValidation.errors.join(", ")}`);
+
       const txHash = await submitTx(
         signedXdr,
         networkDetails.networkPassphrase,
@@ -464,7 +485,25 @@ export const useContract = () => {
         .build();
 
       const xdr_tx = tx.toXDR();
+      
+      // Validate before signing (sanity check)
+      const preValidation = validateTransaction(xdr_tx, {
+        expectedContractId: contractId,
+        expectedFunction: "update_profile",
+        networkPassphrase: networkDetails.networkPassphrase
+      });
+      if (!preValidation.isValid) throw new Error(`Invalid transaction built: ${preValidation.errors.join(", ")}`);
+
       const signedXdr = await wallet.signTransaction(xdr_tx);
+      
+      // Validate after signing (security check)
+      const postValidation = validateTransaction(signedXdr, {
+        expectedContractId: contractId,
+        expectedFunction: "update_profile",
+        networkPassphrase: networkDetails.networkPassphrase
+      });
+      if (!postValidation.isValid) throw new Error(`Transaction modification detected: ${postValidation.errors.join(", ")}`);
+
       const txHash = await submitTx(
         signedXdr,
         networkDetails.networkPassphrase,
@@ -509,7 +548,29 @@ export const useContract = () => {
         .build();
 
       const xdr = tx.toXDR();
+      
+      const expectedArgs = { creator, amount: safeStringToBigInt(stroopAmount), message };
+      
+      // Validate before signing (sanity check)
+      const preValidation = validateTransaction(xdr, {
+        expectedContractId: contractId,
+        expectedFunction: "send_tip",
+        expectedArgs,
+        networkPassphrase: networkDetails.networkPassphrase
+      });
+      if (!preValidation.isValid) throw new Error(`Invalid transaction built: ${preValidation.errors.join(", ")}`);
+
       const signedXdr = await wallet.signTransaction(xdr);
+      
+      // Validate after signing (security check)
+      const postValidation = validateTransaction(signedXdr, {
+        expectedContractId: contractId,
+        expectedFunction: "send_tip",
+        expectedArgs,
+        networkPassphrase: networkDetails.networkPassphrase
+      });
+      if (!postValidation.isValid) throw new Error(`Transaction modification detected: ${postValidation.errors.join(", ")}`);
+
       const txHash = await submitTx(
         signedXdr,
         networkDetails.networkPassphrase,
@@ -548,7 +609,29 @@ export const useContract = () => {
         .build();
 
       const xdr = tx.toXDR();
+      
+      const expectedArgs = { amount: safeStringToBigInt(stroopAmount) };
+      
+      // Validate before signing (sanity check)
+      const preValidation = validateTransaction(xdr, {
+        expectedContractId: contractId,
+        expectedFunction: "withdraw_tips",
+        expectedArgs,
+        networkPassphrase: networkDetails.networkPassphrase
+      });
+      if (!preValidation.isValid) throw new Error(`Invalid transaction built: ${preValidation.errors.join(", ")}`);
+
       const signedXdr = await wallet.signTransaction(xdr);
+      
+      // Validate after signing (security check)
+      const postValidation = validateTransaction(signedXdr, {
+        expectedContractId: contractId,
+        expectedFunction: "withdraw_tips",
+        expectedArgs,
+        networkPassphrase: networkDetails.networkPassphrase
+      });
+      if (!postValidation.isValid) throw new Error(`Transaction modification detected: ${postValidation.errors.join(", ")}`);
+
       const txHash = await submitTx(
         signedXdr,
         networkDetails.networkPassphrase,

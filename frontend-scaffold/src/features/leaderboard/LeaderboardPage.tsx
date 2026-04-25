@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { Crown, Medal, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -7,7 +7,7 @@ import AmountDisplay from "../../components/shared/AmountDisplay";
 import CreditBadge from "../../components/shared/CreditBadge";
 import Avatar from "../../components/ui/Avatar";
 import Card from "../../components/ui/Card";
-import Pagination from "../../components/ui/Pagination";
+import VirtualList from "../../components/shared/VirtualList";
 import ErrorState from "../../components/shared/ErrorState";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
@@ -21,13 +21,6 @@ const LeaderboardPage: React.FC = () => {
   usePageTitle('Leaderboard');
 
   const { entries, loading, error, refetch } = useLeaderboard();
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = Math.ceil(entries.length / PAGE_SIZE);
-
-  const visibleEntries = useMemo(() => {
-    const startIndex = (currentPage - 1) * PAGE_SIZE;
-    return entries.slice(startIndex, startIndex + PAGE_SIZE);
-  }, [entries, currentPage]);
 
   if (loading && entries.length === 0 && !error) {
     return <LeaderboardSkeleton count={PAGE_SIZE} />;
@@ -97,47 +90,41 @@ const LeaderboardPage: React.FC = () => {
                 <p className="font-black uppercase text-gray-500">No creators found on the leaderboard yet.</p>
               </div>
             ) : (
-              <table className="min-w-full border-collapse">
-                <thead>
-                  <tr className="border-b-2 border-black text-left">
-                    <th scope="col" className="px-4 py-3 text-xs font-black uppercase tracking-[0.2em]">Rank</th>
-                    <th scope="col" className="px-4 py-3 text-xs font-black uppercase tracking-[0.2em]">Creator</th>
-                    <th scope="col" className="px-4 py-3 text-xs font-black uppercase tracking-[0.2em]">Volume</th>
-                    <th scope="col" className="px-4 py-3 text-xs font-black uppercase tracking-[0.2em]">Credit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {visibleEntries.map((entry, index) => {
-                    const rank = (currentPage - 1) * PAGE_SIZE + index + 1;
-
+              <div className="min-w-[700px] w-full border-collapse">
+                <div className="grid grid-cols-[100px_1fr_150px_150px] border-b-2 border-black text-left w-full pr-4">
+                  <div className="px-4 py-3 text-xs font-black uppercase tracking-[0.2em]">Rank</div>
+                  <div className="px-4 py-3 text-xs font-black uppercase tracking-[0.2em]">Creator</div>
+                  <div className="px-4 py-3 text-xs font-black uppercase tracking-[0.2em]">Volume</div>
+                  <div className="px-4 py-3 text-xs font-black uppercase tracking-[0.2em]">Credit</div>
+                </div>
+                <VirtualList
+                  items={entries}
+                  height={500}
+                  estimateSize={64}
+                  renderItem={(entry, index) => {
+                    const rank = index + 1;
                     return (
-                      <tr key={entry.address} className="border-b border-gray-300 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-4 text-sm font-black">{rank}</td>
-                        <td className="px-4 py-4">
-                          <Link to={`/@${entry.username}`} className="flex items-center gap-3">
+                      <div className="grid grid-cols-[100px_1fr_150px_150px] border-b border-gray-300 hover:bg-gray-50 transition-colors h-full items-center">
+                        <div className="px-4 text-sm font-black">{rank}</div>
+                        <div className="px-4">
+                          <Link to={`/@${entry.username}`} className="flex items-center gap-3 w-max">
                             <Avatar address={entry.address} alt={entry.username} fallback={entry.username} size="md" />
                             <span className="font-black uppercase">{entry.username}</span>
                           </Link>
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                        <div className="px-4">
                           <AmountDisplay amount={entry.totalTipsReceived} className="text-sm" />
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                        <div className="px-4">
                           <CreditBadge score={entry.creditScore} />
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     );
-                  })}
-                </tbody>
-              </table>
+                  }}
+                />
+              </div>
             )}
           </div>
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
         </Card>
       </section>
     </PageContainer>
