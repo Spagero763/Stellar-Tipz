@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { Crown, Medal, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -7,7 +7,7 @@ import AmountDisplay from "../../components/shared/AmountDisplay";
 import CreditBadge from "../../components/shared/CreditBadge";
 import Avatar from "../../components/ui/Avatar";
 import Card from "../../components/ui/Card";
-import Pagination from "../../components/ui/Pagination";
+import VirtualList from "../../components/shared/VirtualList";
 import ErrorState from "../../components/shared/ErrorState";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLeaderboard } from "@/hooks/useLeaderboard";
@@ -131,33 +131,27 @@ const LeaderboardPage: React.FC = () => {
                     const rank = (currentPage - 1) * PAGE_SIZE + index + 1;
 
                     return (
-                      <tr key={entry.address} className="border-b border-gray-300 hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-4 text-sm font-black">{rank}</td>
-                        <td className="px-4 py-4">
-                          <Link to={`/@${entry.username}`} className="flex items-center gap-3">
+                      <div className="grid grid-cols-[100px_1fr_150px_150px] border-b border-gray-300 hover:bg-gray-50 transition-colors h-full items-center">
+                        <div className="px-4 text-sm font-black">{rank}</div>
+                        <div className="px-4">
+                          <Link to={`/@${entry.username}`} className="flex items-center gap-3 w-max">
                             <Avatar address={entry.address} alt={entry.username} fallback={entry.username} size="md" />
                             <span className="font-black uppercase">{entry.username}</span>
                           </Link>
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                        <div className="px-4">
                           <AmountDisplay amount={entry.totalTipsReceived} className="text-sm" />
-                        </td>
-                        <td className="px-4 py-4">
+                        </div>
+                        <div className="px-4">
                           <CreditBadge score={entry.creditScore} />
-                        </td>
-                      </tr>
+                        </div>
+                      </div>
                     );
-                  })}
-                </tbody>
-              </table>
+                  }}
+                />
+              </div>
             )}
           </div>
-
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
         </Card>
       </section>
     </PageContainer>
